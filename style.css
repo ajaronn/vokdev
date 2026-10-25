@@ -83,3 +83,5 @@ th{font-family:var(--hand);font-size:20px;font-weight:600}
 .ep{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;margin:14px 0 4px}.ep b{font-family:ui-monospace,monospace;font-size:14px}
 .m{font-family:ui-monospace,monospace;font-size:12px;font-weight:700;padding:2px 7px;border-radius:4px;color:var(--rust-contrast);background:var(--ink)}
 .m.POST{background:var(--ok)}.m.PATCH{background:var(--warn)}.m.DELETE{background:var(--err)}
+.langbar{display:flex;justify-content:flex-end}
+.langsel{font:inherit;font-size:14px;padding:4px 8px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--ink);width:auto}
