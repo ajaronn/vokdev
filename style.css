@@ -95,3 +95,6 @@ pre.out{white-space:pre-wrap;word-break:break-word;min-height:60px}
 .steps{padding-left:22px;margin:0 0 14px}.steps li{margin:0 0 6px}
 .btns.spaced{margin-top:14px}
 .card+.card{margin-top:16px}
+.btn.kk{gap:10px}.btn.kk .bl{width:22px;height:22px;border-radius:22%;flex:none;display:block}.btn.small.kk .bl{width:18px;height:18px}
+.preview-btn{margin:0 0 14px;display:flex}.preview-btn .btn{flex:0 0 auto}
+.tabs{margin:14px 0 10px}.tabs .btn{flex:0 0 auto}
