@@ -189,4 +189,32 @@
     'err:wrong_client': ['Only allowed via the Karteikasten Developer site.', 'Permitido apenas pelo site Karteikasten Developer.'], 'err:not_found': ['App not found.', 'App não encontrado.'],
     'err:server_error': ['Internal error.', 'Erro interno.']
   });
+
+  kkAdd({
+    /* --- Test-App --- */
+    'Test-App': ['Test app', 'App de teste'], 'Test-App – Karteikasten Developer': ['Test app – Karteikasten Developer', 'App de teste – Karteikasten Developer'],
+    'Mit der Test-App probierst du aus, wie sich eine fremde App mit „Mit Karteikasten fortfahren“ anmeldet und die REST-API nutzt – ohne eigene Webseite bauen zu müssen.': ['Use the test app to try how a third-party app signs in with “Continue with Karteikasten” and uses the REST API – without building your own website.', 'Use o app de teste para ver como um app de terceiros entra com “Continuar com o Karteikasten” e usa a API REST – sem precisar criar um site.'],
+    'Lege unter „Meine Apps“ eine App vom Typ „Öffentlich“ an.': ['Create a “Public” app under “My apps”.', 'Crie um app do tipo “Público” em “Meus apps”.'],
+    'Trage als Weiterleitungs-URI exakt diese Adresse ein:': ['Enter exactly this address as the redirect URI:', 'Informe exatamente este endereço como URI de redirecionamento:'],
+    'Wähle die Berechtigungen, die du testen willst.': ['Choose the permissions you want to test.', 'Escolha as permissões que deseja testar.'],
+    'Öffne die Test-App, trage die client_id ein und melde dich an. Danach kannst du API-Anfragen senden.': ['Open the test app, enter the client_id and sign in. Then you can send API requests.', 'Abra o app de teste, informe o client_id e entre. Depois você pode enviar requisições à API.'],
+    'Test-App öffnen': ['Open test app', 'Abrir app de teste'], 'Melde dich an, um deine Apps hier direkt zum Testen auszuwählen.': ['Sign in to pick your apps for testing right here.', 'Entre para escolher seus apps para teste aqui mesmo.'],
+    'Deine Apps testen': ['Test your apps', 'Testar seus apps'], 'Du hast noch keine öffentliche App.': ['You do not have a public app yet.', 'Você ainda não tem um app público.'],
+    'Weiterleitungs-URI der Test-App ist eingetragen.': ['The test app redirect URI is registered.', 'O URI de redirecionamento do app de teste está registrado.'],
+    'Die Weiterleitungs-URI der Test-App fehlt noch (Bearbeiten).': ['The test app redirect URI is still missing (edit the app).', 'O URI de redirecionamento do app de teste ainda não foi adicionado (edite o app).'],
+    'Mit dieser App testen': ['Test with this app', 'Testar com este app'],
+    '5. Ausprobieren': ['5. Try it out', '5. Experimentar'], 'Mit der Test-App kannst du Anmeldung und API direkt im Browser testen.': ['With the test app you can try sign-in and the API right in your browser.', 'Com o app de teste você pode experimentar o login e a API direto no navegador.'], 'Zur Test-App': ['Go to the test app', 'Ir para o app de teste'],
+    'Simuliert eine Dritt-App mit „Mit Karteikasten fortfahren“. Trage die client_id deiner App ein und probiere Anmeldung und API aus.': ['Simulates a third-party app with “Continue with Karteikasten”. Enter your app’s client_id and try sign-in and the API.', 'Simula um app de terceiros com “Continuar com o Karteikasten”. Informe o client_id do seu app e teste o login e a API.'],
+    '1. Anmelden': ['1. Sign in', '1. Entrar'], '2. API-Test': ['2. API test', '2. Teste da API'],
+    'Weiterleitungs-URI dieser Test-Seite (muss bei deiner App unter „Meine Apps“ eingetragen sein):': ['Redirect URI of this test page (must be registered for your app under “My apps”):', 'URI de redirecionamento desta página de teste (deve estar registrado no seu app em “Meus apps”):'],
+    'client_id deiner App': ['Your app’s client_id', 'client_id do seu app'], 'Nur öffentliche Apps (PKCE, ohne Secret) funktionieren hier.': ['Only public apps (PKCE, no secret) work here.', 'Apenas apps públicos (PKCE, sem secret) funcionam aqui.'],
+    'Eigene Anfrage': ['Custom request', 'Requisição própria'], 'Senden': ['Send', 'Enviar'], 'Methode': ['Method', 'Método'], 'Pfad': ['Path', 'Caminho'], 'JSON-Body (optional)': ['JSON body (optional)', 'Corpo JSON (opcional)'],
+    'Anleitung zur Test-App': ['Guide to the test app', 'Guia do app de teste'], 'Zur Developer-Seite': ['To the developer site', 'Para o site de desenvolvedores'],
+    'Bitte zuerst die client_id eintragen.': ['Please enter the client_id first.', 'Informe primeiro o client_id.'],
+    'Angemeldet – Access-Token gespeichert (nur in diesem Browser).': ['Signed in – access token stored (in this browser only).', 'Conectado – token de acesso salvo (somente neste navegador).'],
+    'Anmeldung erfolgreich.': ['Sign-in successful.', 'Login realizado com sucesso.'], 'Abgelehnt: Der Zugriff wurde nicht erlaubt.': ['Declined: access was not granted.', 'Recusado: o acesso não foi permitido.'],
+    'Ungültiger Anmeldestatus (state). Bitte erneut anmelden.': ['Invalid sign-in state. Please sign in again.', 'Estado de login inválido. Entre novamente.'],
+    'Fehler: {m}': ['Error: {m}', 'Erro: {m}'], 'Netzwerkfehler: {m}': ['Network error: {m}', 'Erro de rede: {m}'],
+    'Der JSON-Body ist ungültig.': ['The JSON body is invalid.', 'O corpo JSON é inválido.'], 'Lädt …': ['Loading …', 'Carregando …']
+  });
 })();
