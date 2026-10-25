@@ -7,7 +7,7 @@
   var CONFIG = {
     SUPABASE_URL: 'https://qujcvvxdvpqnsfgvleid.supabase.co',
     ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1amN2dnhkdnBxbnNmZ3ZsZWlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwODQ3OTcsImV4cCI6MjEwNTY2MDc5N30.aNsVqELIJTSDIuJOEj6CL_ii2NL6JUBjZRDb3ZtcTWY',
-    CLIENT_ID: 'HIER_CLIENT_ID_DES_DEVELOPER_CLIENTS_EINTRAGEN',   // siehe SETUP.md, Schritt 4
+    CLIENT_ID: '56a57017-9aa6-4798-b5e9-4bdcf7963781',   // siehe SETUP.md, Schritt 4
     REDIRECT_URI: 'https://ajaronn.github.io/vokdev/',
     MAIN_APP: 'https://ajaronn.github.io/vokabeln/'
   };
