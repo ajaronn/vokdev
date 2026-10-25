@@ -234,4 +234,11 @@
     'Login-Button': ['Login button', 'Botão de login'], 'So sieht der Button mit dem Karteikasten-Logo aus. Du kannst ihn in deiner App einsetzen.': ['This is the button with the Karteikasten logo. You can use it in your app.', 'Este é o botão com o logotipo do Karteikasten. Você pode usá-lo no seu app.'],
     'Button-Code kopieren': ['Copy button code', 'Copiar código do botão'], 'Zum Code-Generator': ['To the code generator', 'Ir ao gerador de código']
   });
+
+  kkAdd({
+    'Du nutzt Apps mit Karteikasten?': ['Do you use apps with Karteikasten?', 'Você usa apps com o Karteikasten?'],
+    'Unter „Verbundene Apps“ siehst du, welche Apps auf dein Konto zugreifen dürfen. Du kannst Berechtigungen ändern oder den Zugriff widerrufen.': ['Under “Connected apps” you can see which apps may access your account. You can change permissions or revoke access.', 'Em “Apps conectados” você vê quais apps podem acessar sua conta. Você pode alterar permissões ou revogar o acesso.'],
+    'Verbundene Apps verwalten': ['Manage connected apps', 'Gerenciar apps conectados'],
+    'Nutzer verwalten und widerrufen ihre Zugriffe unter': ['Users manage and revoke their access under', 'Os usuários gerenciam e revogam seus acessos em']
+  });
 })();
