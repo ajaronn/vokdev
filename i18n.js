@@ -217,4 +217,21 @@
     'Fehler: {m}': ['Error: {m}', 'Erro: {m}'], 'Netzwerkfehler: {m}': ['Network error: {m}', 'Erro de rede: {m}'],
     'Der JSON-Body ist ungültig.': ['The JSON body is invalid.', 'O corpo JSON é inválido.'], 'Lädt …': ['Loading …', 'Carregando …']
   });
+
+  kkAdd({
+    /* --- Code-Generator --- */
+    'Code-Generator': ['Code generator', 'Gerador de código'], 'Code-Generator – Karteikasten Developer': ['Code generator – Karteikasten Developer', 'Gerador de código – Karteikasten Developer'],
+    'Trage deine Daten ein und kopiere fertigen Code für Anmeldung (OAuth 2.0 + PKCE) und API-Aufrufe. Alles läuft in deinem Browser, nichts wird gespeichert oder gesendet.': ['Enter your details and copy ready-made code for sign-in (OAuth 2.0 + PKCE) and API calls. Everything runs in your browser, nothing is stored or sent.', 'Informe seus dados e copie o código pronto para login (OAuth 2.0 + PKCE) e chamadas de API. Tudo roda no seu navegador, nada é salvo ou enviado.'],
+    'client_id deiner App': ['Your app’s client_id', 'client_id do seu app'], 'Du findest sie unter „Meine Apps“.': ['You will find it under “My apps”.', 'Você a encontra em “Meus apps”.'],
+    'Weiterleitungs-URI': ['Redirect URI', 'URI de redirecionamento'], 'Muss exakt mit der URI bei deiner App übereinstimmen.': ['Must match the URI of your app exactly.', 'Deve coincidir exatamente com o URI do seu app.'],
+    'App-Typ': ['App type', 'Tipo de app'],
+    'Öffentlich – Browser/Mobile-App (PKCE, kein Secret)': ['Public – browser/mobile app (PKCE, no secret)', 'Público – app de navegador/celular (PKCE, sem secret)'], 'Vertraulich – eigener Server (mit Secret)': ['Confidential – own server (with secret)', 'Confidencial – servidor próprio (com secret)'],
+    'Das Client-Secret gehört nur auf deinen Server. Niemals in Browser-Code oder in ein öffentliches Repository.': ['The client secret belongs on your server only. Never in browser code or a public repository.', 'O client secret deve ficar apenas no seu servidor. Nunca em código de navegador ou repositório público.'],
+    'Öffentliche Apps brauchen kein Secret. Die Sicherheit kommt von PKCE.': ['Public apps need no secret. Security comes from PKCE.', 'Apps públicos não precisam de secret. A segurança vem do PKCE.'],
+    'Kopieren': ['Copy', 'Copiar'], 'Kopiert!': ['Copied!', 'Copiado!'], 'Kopieren nicht möglich. Markiere den Code und kopiere ihn von Hand.': ['Copying failed. Select the code and copy it manually.', 'Não foi possível copiar. Selecione o código e copie manualmente.'],
+    'Starter-Vorlage herunterladen (.html)': ['Download starter template (.html)', 'Baixar modelo inicial (.html)'],
+    'Die Starter-Vorlage ist eine einzelne HTML-Datei mit Login-Button und Listenanzeige. Öffentliche Apps, nur client_id und Weiterleitungs-URI eintragen.': ['The starter template is a single HTML file with a login button and list view. It uses a public app, so just enter the client_id and redirect URI.', 'O modelo inicial é um único arquivo HTML com botão de login e exibição de listas. Usa um app público, basta informar client_id e URI de redirecionamento.'],
+    'Login-Button': ['Login button', 'Botão de login'], 'So sieht der Button mit dem Karteikasten-Logo aus. Du kannst ihn in deiner App einsetzen.': ['This is the button with the Karteikasten logo. You can use it in your app.', 'Este é o botão com o logotipo do Karteikasten. Você pode usá-lo no seu app.'],
+    'Button-Code kopieren': ['Copy button code', 'Copiar código do botão'], 'Zum Code-Generator': ['To the code generator', 'Ir ao gerador de código']
+  });
 })();
