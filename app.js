@@ -9,7 +9,8 @@
     ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1amN2dnhkdnBxbnNmZ3ZsZWlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwODQ3OTcsImV4cCI6MjEwNTY2MDc5N30.aNsVqELIJTSDIuJOEj6CL_ii2NL6JUBjZRDb3ZtcTWY',
     CLIENT_ID: '56a57017-9aa6-4798-b5e9-4bdcf7963781',   // siehe SETUP.md, Schritt 4
     REDIRECT_URI: 'https://ajaronn.github.io/vokdev/',
-    MAIN_APP: 'https://ajaronn.github.io/vokabeln/'
+    MAIN_APP: 'https://ajaronn.github.io/vokabeln/',
+    CONNECTED_APPS: 'https://ajaronn.github.io/vokabeln/oauth/apps/'
   };
   var API_BASE = CONFIG.SUPABASE_URL + '/functions/v1/dev-api/v1';
   var APPS_API = CONFIG.SUPABASE_URL + '/functions/v1/dev-apps';
@@ -128,6 +129,9 @@
         card('REST-API', 'Listen lesen, erstellen, bearbeiten und löschen. Vokabeln lesen, erstellen und ändern. Lernfortschritt abrufen.'),
         card('Sicher & kontrollierbar', 'Nutzer können Berechtigungen einzeln abwählen und den Zugriff jederzeit widerrufen. Zum Erstellen von Apps ist 2FA Pflicht.')
       ]),
+      el('section', { class: 'card' }, [el('h3', { text: 'Du nutzt Apps mit Karteikasten?' }),
+        el('p', { class: 'muted', text: 'Unter „Verbundene Apps“ siehst du, welche Apps auf dein Konto zugreifen dürfen. Du kannst Berechtigungen ändern oder den Zugriff widerrufen.' }),
+        el('a', { class: 'btn', href: CONFIG.CONNECTED_APPS, text: 'Verbundene Apps verwalten' })]),
       el('section', { class: 'card' }, [el('h2', { text: 'So funktioniert es' }), el('ol', null, [
         el('li', { text: 'Melde dich mit deinem Karteikasten-Konto an und lege unter „Meine Apps“ eine App an.' }),
         el('li', { text: 'Trage Weiterleitungs-URI, Logo und die benötigten Berechtigungen ein.' }),
@@ -151,6 +155,7 @@
         el('p', { class: 'small' }, [document.createTextNode('Discovery: '), code(B + '/.well-known/oauth-authorization-server/auth/v1')])]),
       el('section', { class: 'card' }, [el('h2', { text: '2. Berechtigungen' }),
         el('p', { text: 'Du deklarierst beim Anlegen, welche Berechtigungen deine App maximal braucht. Nutzer sehen sie auf der Zustimmungsseite und können einzelne abwählen. Fordere nur an, was du brauchst.' }),
+        el('p', { class: 'small' }, [document.createTextNode(kkT('Nutzer verwalten und widerrufen ihre Zugriffe unter') + ' '), el('a', { href: CONFIG.CONNECTED_APPS, text: kkT('Verbundene Apps') }), document.createTextNode('.')]),
         el('table', null, [el('thead', null, [el('tr', null, [el('th', { text: 'Scope' }), el('th', { text: 'Bezeichnung' }), el('th', { text: 'Umfang' })])]), el('tbody', null, rows)])]),
       el('section', { class: 'card' }, [el('h2', { text: '3. REST-API' }),
         el('p', { class: 'small' }, [document.createTextNode('Basis-URL: '), code(API_BASE)]),
