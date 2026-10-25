@@ -1,46 +1,67 @@
 <!doctype html>
-<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#A8442E">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src https://qujcvvxdvpqnsfgvleid.supabase.co; base-uri 'none'; form-action 'none'">
 <title>Test-App – Karteikasten Developer</title>
-<link rel="stylesheet" href="style.css"></head>
-<body><main class="wrap">
-<h1>Test-App</h1>
-<p class="muted">Simuliert eine Dritt-App mit „Mit Karteikasten fortfahren“. Trage deine client_id der Test-App ein.</p>
-<div class="card">
-  <label class="f" for="cid">client_id der Test-App</label><input type="text" id="cid">
-  <div class="btns" style="margin-top:14px"><button class="btn primary" id="login">Mit Karteikasten fortfahren</button><button class="btn" id="out">Abmelden</button></div>
-</div>
-<div class="card" id="api" hidden style="margin-top:16px">
-  <h2>API-Test</h2>
-  <div class="btns">
-    <button class="btn small" data-p="/me">GET /me</button>
-    <button class="btn small" data-p="/lists">GET /lists</button>
-    <button class="btn small" data-p="/progress">GET /progress</button>
-    <button class="btn small" id="mk">POST /lists (Testliste)</button>
-  </div>
-  <pre id="res" style="margin-top:14px">–</pre>
-</div>
-<p class="foot"><a href="./">Zur Developer-Seite</a></p>
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style id="kkFrameGuard">html{display:none!important}</style>
+<script src="frameguard.js"></script>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="brand" href="./#/"><img src="icon-192.png" alt=""><b>Karteikasten <span class="hand">Developer</span></b></a>
+  <nav aria-label="Hauptnavigation"><a href="./#/">Start</a><a href="./#/docs">Dokumentation</a><a href="./#/apps">Meine Apps</a><a href="./#/test" aria-current="page">Test-App</a></nav>
+  <div id="langbox"></div>
+</div></header>
+<main class="wrap" id="view">
+  <h1>Test-App</h1>
+  <p class="muted">Simuliert eine Dritt-App mit „Mit Karteikasten fortfahren“. Trage die client_id deiner App ein und probiere Anmeldung und API aus.</p>
+
+  <div class="notice err hidden" id="msg" role="alert"></div>
+
+  <section class="card">
+    <h2>1. Anmelden</h2>
+    <p class="small muted">Weiterleitungs-URI dieser Test-Seite (muss bei deiner App unter „Meine Apps“ eingetragen sein):</p>
+    <p class="kv"><code id="redir"></code></p>
+    <label class="f" for="cid">client_id deiner App</label>
+    <input type="text" id="cid" autocomplete="off" spellcheck="false" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+    <p class="hint">Nur öffentliche Apps (PKCE, ohne Secret) funktionieren hier.</p>
+    <div class="btns spaced">
+      <button class="btn primary" id="login" type="button">Mit Karteikasten fortfahren</button>
+      <button class="btn" id="out" type="button">Abmelden</button>
+    </div>
+    <p class="who hidden" id="state"></p>
+  </section>
+
+  <section class="card hidden" id="api">
+    <h2>2. API-Test</h2>
+    <div class="btns">
+      <button class="btn small" type="button" data-m="GET" data-p="/me">GET /me</button>
+      <button class="btn small" type="button" data-m="GET" data-p="/lists">GET /lists</button>
+      <button class="btn small" type="button" data-m="GET" data-p="/progress">GET /progress</button>
+      <button class="btn small" type="button" id="mk">POST /lists (Testliste)</button>
+    </div>
+    <label class="f" for="rpath">Eigene Anfrage</label>
+    <div class="reqrow">
+      <select id="rmeth" aria-label="Methode"><option>GET</option><option>POST</option><option>PATCH</option><option>DELETE</option></select>
+      <input type="text" id="rpath" value="/lists" spellcheck="false" aria-label="Pfad">
+      <button class="btn small" type="button" id="rsend">Senden</button>
+    </div>
+    <textarea id="rbody" spellcheck="false" placeholder="JSON-Body (optional)"></textarea>
+    <pre class="out" id="res"><code>–</code></pre>
+  </section>
 </main>
-<script>
-var SB='https://qujcvvxdvpqnsfgvleid.supabase.co', REDIR=location.origin+location.pathname;
-var KEY='ajaronn_test_app', $=function(i){return document.getElementById(i)};
-$('cid').value=localStorage.getItem(KEY+'_cid')||'';
-function b64(buf){var s='';new Uint8Array(buf).forEach(function(b){s+=String.fromCharCode(b)});return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
-function rnd(n){var a=new Uint8Array(n);crypto.getRandomValues(a);return b64(a)}
-$('login').onclick=function(){var cid=$('cid').value.trim();if(!cid)return alert('client_id fehlt');localStorage.setItem(KEY+'_cid',cid);
-  var v=rnd(48),st=rnd(16);crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)).then(function(h){sessionStorage.setItem(KEY,JSON.stringify({v:v,s:st}));
-  location.assign(SB+'/auth/v1/oauth/authorize?'+new URLSearchParams({response_type:'code',client_id:cid,redirect_uri:REDIR,scope:'email profile',state:st,code_challenge:b64(h),code_challenge_method:'S256'}))})};
-$('out').onclick=function(){localStorage.removeItem(KEY+'_tok');location.reload()};
-function show(x){$('res').textContent=typeof x==='string'?x:JSON.stringify(x,null,2)}
-function call(p,o){o=o||{};return fetch(SB+'/functions/v1/dev-api/v1'+p,{method:o.method||'GET',headers:{authorization:'Bearer '+localStorage.getItem(KEY+'_tok'),'content-type':'application/json'},body:o.body}).then(function(r){return r.text().then(function(t){show(r.status+'\n'+t)})})}
-document.querySelectorAll('[data-p]').forEach(function(b){b.onclick=function(){call(b.dataset.p)}});
-$('mk').onclick=function(){call('/lists',{method:'POST',body:JSON.stringify({name:'API-Testliste'})})};
-var q=new URLSearchParams(location.search);
-if(q.get('code')){var s=JSON.parse(sessionStorage.getItem(KEY)||'{}');history.replaceState(null,'',REDIR);
-  if(s.s!==q.get('state'))alert('state stimmt nicht');else
-  fetch(SB+'/auth/v1/oauth/token',{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded',apikey:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1amN2dnhkdnBxbnNmZ3ZsZWlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwODQ3OTcsImV4cCI6MjEwNTY2MDc5N30.aNsVqELIJTSDIuJOEj6CL_ii2NL6JUBjZRDb3ZtcTWY'},
-  body:new URLSearchParams({grant_type:'authorization_code',code:q.get('code'),redirect_uri:REDIR,client_id:localStorage.getItem(KEY+'_cid'),code_verifier:s.v}).toString()})
-  .then(function(r){return r.json()}).then(function(j){if(j.access_token){localStorage.setItem(KEY+'_tok',j.access_token);location.reload()}else alert(JSON.stringify(j))})}
-else if(q.get('error'))show('Abgelehnt: '+q.get('error'));
-if(localStorage.getItem(KEY+'_tok'))$('api').hidden=false;
-</script></body></html>
+<p class="foot"><a href="./#/test">Anleitung zur Test-App</a> · <a href="./">Zur Developer-Seite</a></p>
+<script src="i18n.js"></script>
+<script src="test.js"></script>
+</body>
+</html>
