@@ -41,6 +41,7 @@
   function b64url(buf) { var s = ''; new Uint8Array(buf).forEach(function (b) { s += String.fromCharCode(b); }); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
   function rand(n) { var a = new Uint8Array(n); crypto.getRandomValues(a); return b64url(a); }
   function jwt(t) { try { var p = t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'); return JSON.parse(atob(p + '='.repeat((4 - p.length % 4) % 4))); } catch (e) { return {}; } }
+  function kkBtn(text, cls, fn) { return el('button', { class: 'btn kk ' + cls, type: 'button', onclick: fn }, [el('img', { class: 'bl', src: 'icon-192.png', alt: '' }), el('span', { text: text })]); }
   function code(text) { return el('code', { text: text }); }
   function pre(text) { return el('pre', null, [el('code', { text: text })]); }
 
@@ -105,7 +106,7 @@
     userbox.textContent = '';
     var s = getSession();
     if (s) { var c = jwt(s.access_token); userbox.appendChild(el('span', { class: 'small muted', text: c.email || 'Angemeldet' })); userbox.appendChild(document.createTextNode(' ')); userbox.appendChild(el('button', { class: 'btn small', onclick: logout, text: 'Abmelden' })); }
-    else userbox.appendChild(el('button', { class: 'btn small primary', onclick: login, text: 'Mit Karteikasten fortfahren' }));
+    else userbox.appendChild(kkBtn('Mit Karteikasten fortfahren', 'small primary', login));
     kkTranslateTree(userbox);
   }
   function markNav(r) { document.querySelectorAll('.top nav a').forEach(function (a) { if (a.dataset.r === r) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); }); }
@@ -119,7 +120,7 @@
         el('h1', { text: 'Baue mit Karteikasten' }),
         el('p', { class: 'muted', text: 'Lass Nutzer sich mit ihrem Karteikasten-Konto anmelden und gib deiner App – mit ihrer Erlaubnis – Zugriff auf Listen, Vokabeln und Lernfortschritt.' }),
         el('div', { class: 'btns', style: null }, [
-          el('button', { class: 'btn primary', onclick: s ? function () { location.hash = '#/apps'; } : login, text: s ? 'Meine Apps' : 'Mit Karteikasten fortfahren' }),
+          s ? el('button', { class: 'btn primary', onclick: function () { location.hash = '#/apps'; }, text: 'Meine Apps' }) : kkBtn('Mit Karteikasten fortfahren', 'primary', login),
           el('a', { class: 'btn', href: '#/docs', text: 'Dokumentation lesen' })])
       ]),
       el('div', { class: 'grid' }, [
@@ -165,7 +166,7 @@
         el('p', { class: 'muted small', text: 'Limits: 200 Listen, 5000 Vokabeln je Liste. Änderungen über die API erscheinen in der Karteikasten-App nach dem nächsten Laden/Synchronisieren.' })]),
       el('section', { class: 'card' }, [el('h2', { text: '5. Ausprobieren' }),
         el('p', { text: 'Mit der Test-App kannst du Anmeldung und API direkt im Browser testen.' }),
-        el('a', { class: 'btn', href: '#/test', text: 'Zur Test-App' })])
+        el('div', { class: 'btns' }, [el('a', { class: 'btn', href: '#/test', text: 'Zur Test-App' }), el('a', { class: 'btn', href: '#/code', text: 'Zum Code-Generator' })])])
     ]);
   }
 
@@ -186,7 +187,7 @@
     ];
     if (!getSession()) {
       nodes.push(el('section', { class: 'card center' }, [el('p', { class: 'muted', text: 'Melde dich an, um deine Apps hier direkt zum Testen auszuwählen.' }),
-        el('button', { class: 'btn primary', onclick: login, text: 'Mit Karteikasten fortfahren' })]));
+        kkBtn('Mit Karteikasten fortfahren', 'primary', login)]));
       mount(nodes); return;
     }
     var box = el('section', { class: 'card' }, [el('h2', { text: 'Deine Apps testen' }), el('div', { class: 'spinner' })]);
@@ -206,10 +207,59 @@
     }).catch(function (e) { box.textContent = ''; box.appendChild(el('div', { class: 'notice err', text: kkT('Konnte nicht geladen werden: {m}', { m: e.message }) })); });
   }
 
+  function pageCode() {
+    var LANGS = [['js', 'JavaScript (Browser)'], ['py', 'Python'], ['php', 'PHP'], ['curl', 'curl (bash)']];
+    var cur = 'js';
+    var cid = el('input', { type: 'text', id: 'g_cid', spellcheck: 'false', autocomplete: 'off', placeholder: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' });
+    var redir = el('input', { type: 'url', id: 'g_redir', value: 'https://deine-app.example/callback' });
+    var typ = el('select', { id: 'g_type' }, [el('option', { value: 'public', text: 'Öffentlich – Browser/Mobile-App (PKCE, kein Secret)' }), el('option', { value: 'confidential', text: 'Vertraulich – eigener Server (mit Secret)' })]);
+    var out = el('pre', { class: 'out' }, [el('code', { text: '' })]);
+    var tabs = el('div', { class: 'btns tabs', role: 'tablist' });
+    var note = el('p', { class: 'hint' });
+    function vals() { return { clientId: cid.value.trim(), redirect: redir.value.trim() || 'https://deine-app.example/callback', type: typ.value }; }
+    function draw() {
+      out.firstChild.textContent = window.kkGenCode(cur, vals());
+      tabs.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.l === cur ? 'true' : 'false'); b.classList.toggle('primary', b.dataset.l === cur); });
+      note.textContent = kkT(typ.value === 'confidential' ? 'Das Client-Secret gehört nur auf deinen Server. Niemals in Browser-Code oder in ein öffentliches Repository.' : 'Öffentliche Apps brauchen kein Secret. Die Sicherheit kommt von PKCE.');
+    }
+    LANGS.forEach(function (l) { tabs.appendChild(el('button', { class: 'btn small', type: 'button', role: 'tab', 'data-l': l[0], onclick: function () { cur = l[0]; draw(); }, text: l[1] })); });
+    [cid, redir].forEach(function (i) { i.addEventListener('input', draw); }); typ.addEventListener('change', draw);
+    var copyBtn = el('button', { class: 'btn small primary', type: 'button', text: 'Kopieren', onclick: function () {
+      var t = out.firstChild.textContent;
+      (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { copyBtn.textContent = kkT('Kopiert!'); setTimeout(function () { copyBtn.textContent = kkT('Kopieren'); }, 1800); }, function () { toast('err', 'Kopieren nicht möglich. Markiere den Code und kopiere ihn von Hand.'); });
+    } });
+    var dl = el('button', { class: 'btn', type: 'button', text: 'Starter-Vorlage herunterladen (.html)', onclick: function () {
+      var v = vals(), img = new Image();
+      function save(logo) {
+        var blob = new Blob([window.kkStarterHtml(v, logo)], { type: 'text/html' }), a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = 'karteikasten-starter.html'; document.body.appendChild(a); a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      }
+      img.onload = function () { var c = document.createElement('canvas'); c.width = c.height = 48; c.getContext('2d').drawImage(img, 0, 0, 48, 48); var d; try { d = c.toDataURL('image/png'); } catch (e) { } save(d); };
+      img.onerror = function () { save(null); }; img.src = 'icon-192.png';
+    } });
+    var btnPreview = el('div', { class: 'preview-btn' }, [kkBtn('Mit Karteikasten fortfahren', 'primary', function () { })]);
+    var btnCode = el('pre', { class: 'out' }, [el('code', { text: window.kkButtonSnippet() })]);
+    mount([
+      el('h1', { text: 'Code-Generator' }),
+      el('section', { class: 'card' }, [
+        el('p', { text: 'Trage deine Daten ein und kopiere fertigen Code für Anmeldung (OAuth 2.0 + PKCE) und API-Aufrufe. Alles läuft in deinem Browser, nichts wird gespeichert oder gesendet.' }),
+        field('client_id deiner App', cid, 'g_cid', 'Du findest sie unter „Meine Apps“.'),
+        field('Weiterleitungs-URI', redir, 'g_redir', 'Muss exakt mit der URI bei deiner App übereinstimmen.'),
+        field('App-Typ', typ, 'g_type'), note, tabs, out,
+        el('div', { class: 'btns spaced' }, [copyBtn, dl]),
+        el('p', { class: 'hint', text: 'Die Starter-Vorlage ist eine einzelne HTML-Datei mit Login-Button und Listenanzeige. Öffentliche Apps, nur client_id und Weiterleitungs-URI eintragen.' })]),
+      el('section', { class: 'card' }, [el('h2', { text: 'Login-Button' }),
+        el('p', { class: 'muted', text: 'So sieht der Button mit dem Karteikasten-Logo aus. Du kannst ihn in deiner App einsetzen.' }), btnPreview, btnCode,
+        el('div', { class: 'btns' }, [el('button', { class: 'btn small', type: 'button', text: 'Button-Code kopieren', onclick: function (ev) { var b = ev.currentTarget; navigator.clipboard && navigator.clipboard.writeText(window.kkButtonSnippet()).then(function () { b.textContent = kkT('Kopiert!'); }); } })])])
+    ]);
+    draw();
+  }
+
   function pageApps() {
     if (!getSession()) {
       mount([el('section', { class: 'card center' }, [el('h1', { text: 'Meine Apps' }), el('p', { class: 'muted', text: 'Melde dich mit deinem Karteikasten-Konto an.' }),
-        el('button', { class: 'btn primary', onclick: login, text: 'Mit Karteikasten fortfahren' })])]); return;
+        kkBtn('Mit Karteikasten fortfahren', 'primary', login)])]); return;
     }
     mount([el('div', { class: 'spinner' })]);
     Promise.all([call(APPS_API, '/status'), call(APPS_API, '/apps')]).then(function (r) { drawApps(r[0], r[1].data); })
@@ -312,9 +362,9 @@
   /* ---------- Routing ---------- */
   function route() {
     var r = (location.hash || '#/').replace(/^#\/?/, '').split('/')[0] || 'home';
-    markNav(r === 'docs' || r === 'apps' || r === 'test' ? r : 'home'); renderUser();
-    document.title = kkT(r === 'docs' ? 'Dokumentation – Karteikasten Developer' : r === 'apps' ? 'Meine Apps – Karteikasten Developer' : r === 'test' ? 'Test-App – Karteikasten Developer' : 'Karteikasten Developer');
-    if (r === 'docs') pageDocs(); else if (r === 'apps') pageApps(); else if (r === 'test') pageTest(); else pageHome();
+    markNav(r === 'docs' || r === 'apps' || r === 'test' || r === 'code' ? r : 'home'); renderUser();
+    document.title = kkT(r === 'docs' ? 'Dokumentation – Karteikasten Developer' : r === 'apps' ? 'Meine Apps – Karteikasten Developer' : r === 'test' ? 'Test-App – Karteikasten Developer' : r === 'code' ? 'Code-Generator – Karteikasten Developer' : 'Karteikasten Developer');
+    if (r === 'docs') pageDocs(); else if (r === 'apps') pageApps(); else if (r === 'test') pageTest(); else if (r === 'code') pageCode(); else pageHome();
   }
   document.querySelector('.top .in').appendChild(kkLangSelect());
   window.addEventListener('hashchange', route);
