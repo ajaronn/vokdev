@@ -36,7 +36,7 @@
     (kids || []).forEach(function (c) { if (c != null) e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
     return e;
   }
-  function mount(nodes) { view.textContent = ''; nodes.forEach(function (n) { view.appendChild(n); }); window.scrollTo(0, 0); }
+  function mount(nodes) { view.textContent = ''; nodes.forEach(function (n) { view.appendChild(n); }); kkTranslateTree(view); window.scrollTo(0, 0); }
   function httpsUrl(u) { try { var x = new URL(u); return x.protocol === 'https:' ? x.href : null; } catch (e) { return null; } }
   function b64url(buf) { var s = ''; new Uint8Array(buf).forEach(function (b) { s += String.fromCharCode(b); }); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
   function rand(n) { var a = new Uint8Array(n); crypto.getRandomValues(a); return b64url(a); }
@@ -50,7 +50,7 @@
   function setSession(s) { try { s ? localStorage.setItem(SKEY, JSON.stringify(s)) : localStorage.removeItem(SKEY); } catch (e) { } }
   function configured() { return CONFIG.CLIENT_ID.indexOf('HIER_') !== 0; }
   function login() {
-    if (!configured()) { alert('Der Developer-OAuth-Client ist noch nicht eingetragen (app.js → CONFIG.CLIENT_ID).'); return; }
+    if (!configured()) { alert(kkT('Der Developer-OAuth-Client ist noch nicht eingetragen (app.js → CONFIG.CLIENT_ID).')); return; }
     var verifier = rand(48), state = rand(16);
     crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)).then(function (h) {
       sessionStorage.setItem('kkdev_pkce', JSON.stringify({ v: verifier, s: state, r: location.hash || '#/apps' }));
@@ -72,7 +72,7 @@
     if (q.get('error')) { setTimeout(function () { toast('err', q.get('error') === 'access_denied' ? 'Anmeldung abgebrochen.' : 'Anmeldung fehlgeschlagen.'); }, 0); return Promise.resolve(); }
     if (!saved || saved.s !== q.get('state')) { setTimeout(function () { toast('err', 'Ungültiger Anmeldestatus. Bitte erneut anmelden.'); }, 0); return Promise.resolve(); }
     return tokenRequest({ grant_type: 'authorization_code', code: q.get('code'), redirect_uri: CONFIG.REDIRECT_URI, client_id: CONFIG.CLIENT_ID, code_verifier: saved.v })
-      .catch(function (e) { setTimeout(function () { toast('err', 'Anmeldung fehlgeschlagen: ' + e.message); }, 0); });
+      .catch(function (e) { setTimeout(function () { toast('err', kkT('Anmeldung fehlgeschlagen: {m}', { m: e.message })); }, 0); });
   }
   function accessToken() {
     var s = getSession(); if (!s) return Promise.resolve(null);
@@ -85,18 +85,18 @@
   function call(base, path, opts) {
     opts = opts || {};
     return accessToken().then(function (t) {
-      if (!t) throw new Error('Nicht angemeldet.');
+      if (!t) throw new Error(kkT('Nicht angemeldet.'));
       return fetch(base + path, { method: opts.method || 'GET', headers: { authorization: 'Bearer ' + t, 'content-type': 'application/json' }, body: opts.body ? JSON.stringify(opts.body) : undefined });
     }).then(function (r) {
       if (r.status === 204) return null;
-      return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) { var e = new Error(j.error && j.error.message || 'Fehler ' + r.status); e.code = j.error && j.error.code; throw e; } return j; });
+      return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) { var c = j.error && j.error.code, m = c ? kkT('err:' + c) : ''; if (!m || m === 'err:' + c) m = j.error && j.error.message || 'Error ' + r.status; var e = new Error(m); e.code = c; throw e; } return j; });
     });
   }
 
   /* ---------- Meldungen ---------- */
   var toastBox = el('div', { 'aria-live': 'polite', class: 'sr' });
   function toast(kind, text) {
-    var n = el('div', { class: 'notice ' + kind, role: kind === 'err' ? 'alert' : 'status', text: text });
+    var n = el('div', { class: 'notice ' + kind, role: kind === 'err' ? 'alert' : 'status', text: kkT(text) });
     view.insertBefore(n, view.firstChild); setTimeout(function () { if (n.parentNode) n.parentNode.removeChild(n); }, 7000);
   }
 
@@ -106,6 +106,7 @@
     var s = getSession();
     if (s) { var c = jwt(s.access_token); userbox.appendChild(el('span', { class: 'small muted', text: c.email || 'Angemeldet' })); userbox.appendChild(document.createTextNode(' ')); userbox.appendChild(el('button', { class: 'btn small', onclick: logout, text: 'Abmelden' })); }
     else userbox.appendChild(el('button', { class: 'btn small primary', onclick: login, text: 'Mit Karteikasten fortfahren' }));
+    kkTranslateTree(userbox);
   }
   function markNav(r) { document.querySelectorAll('.top nav a').forEach(function (a) { if (a.dataset.r === r) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); }); }
 
@@ -172,7 +173,7 @@
     }
     mount([el('div', { class: 'spinner' })]);
     Promise.all([call(APPS_API, '/status'), call(APPS_API, '/apps')]).then(function (r) { drawApps(r[0], r[1].data); })
-      .catch(function (e) { mount([el('div', { class: 'notice err', text: 'Konnte nicht geladen werden: ' + e.message }), el('button', { class: 'btn small', onclick: pageApps, text: 'Erneut versuchen' })]); });
+      .catch(function (e) { mount([el('div', { class: 'notice err', text: kkT('Konnte nicht geladen werden: {m}', { m: e.message }) }), el('button', { class: 'btn small', onclick: pageApps, text: 'Erneut versuchen' })]); });
   }
 
   function drawApps(status, apps) {
@@ -220,12 +221,13 @@
       preview.appendChild(el('p', { class: 'hand muted center', text: 'Vorschau Zustimmungsseite' }));
       preview.appendChild(el('div', { class: 'card' }, [
         el('div', { class: 'pair' }, [lu ? el('img', { class: 'logo', src: lu, alt: '' }) : el('div', { class: 'logo', text: nm[0].toUpperCase() }), el('span', { class: 'arrow', text: '→' }), el('img', { class: 'logo', src: 'icon-192.png', alt: '' })]),
-        el('h2', { class: 'center', text: nm + ' möchte auf dein Karteikasten-Konto zugreifen' }),
+        el('h2', { class: 'center', text: kkT('{name} möchte auf dein Karteikasten-Konto zugreifen', { name: nm }) }),
         f.description.value ? el('p', { class: 'center muted small', text: f.description.value }) : null,
         el('div', { class: 'header-rule' }),
         el('ul', { class: 'scopes' }, chosen.map(function (b) { return el('li', null, [el('input', { type: 'checkbox', checked: true, disabled: true }), el('label', null, [el('b', { text: SCOPES[b.value][0] }), el('span', { class: 'd', text: SCOPES[b.value][1] })])]); })),
         el('div', { class: 'notice warn', text: 'Diese App wurde nicht von Karteikasten geprüft.' }),
         el('div', { class: 'btns' }, [el('span', { class: 'btn', text: 'Ablehnen' }), el('span', { class: 'btn primary', text: 'Erlauben' })])]));
+      kkTranslateTree(preview);
     }
     f.logo.addEventListener('change', function () {
       var file = f.logo.files[0]; if (!file) return;
@@ -255,13 +257,13 @@
       field('Weiterleitungs-URIs (eine pro Zeile)', f.redir, 'f_redir', 'https, exakte Übereinstimmung, keine Wildcards. http nur für localhost.'),
       field('App-Typ', typeSel, 'f_type', edit ? 'Der Typ lässt sich nachträglich nicht ändern.' : null),
       el('fieldset', { class: 'card' }, [el('legend', { class: 'hand', text: 'Berechtigungen' })].concat(Object.keys(SCOPES).map(function (k, i) {
-        return el('div', { class: 'chk' }, [scopeBoxes[i], el('label', { for: 'sc_' + k }, [el('b', { text: SCOPES[k][0] }), document.createTextNode(' – ' + SCOPES[k][1])])]); }))),
+        return el('div', { class: 'chk' }, [scopeBoxes[i], el('label', { for: 'sc_' + k }, [el('b', { text: SCOPES[k][0] }), document.createTextNode(' – '), el('span', { text: SCOPES[k][1] })])]); }))),
       secretBox,
       el('div', { class: 'btns' }, [saveBtn, el('button', { class: 'btn', type: 'button', onclick: pageApps, text: 'Abbrechen' })])
     ]);
     var extra = [];
-    if (edit && app.client_type === 'confidential') extra.push(el('button', { class: 'btn small', type: 'button', onclick: function () { if (!confirm('Neues Secret erzeugen? Das alte wird ungültig.')) return; call(APPS_API, '/apps/' + app.id + '/secret', { method: 'POST' }).then(function (r) { secretBox.textContent = ''; secretBox.appendChild(el('div', { class: 'notice warn' }, [el('b', { text: 'Neues Secret: ' }), code(r.client_secret)])); }).catch(function (e) { toast('err', e.message); }); }, text: 'Secret erneuern' }));
-    if (edit) extra.push(el('button', { class: 'btn small danger', type: 'button', onclick: function () { if (!confirm('App „' + app.name + '“ endgültig löschen? Alle Nutzerzugriffe enden.')) return; call(APPS_API, '/apps/' + app.id, { method: 'DELETE' }).then(pageApps).catch(function (e) { toast('err', e.message); }); }, text: 'App löschen' }));
+    if (edit && app.client_type === 'confidential') extra.push(el('button', { class: 'btn small', type: 'button', onclick: function () { if (!confirm(kkT('Neues Secret erzeugen? Das alte wird ungültig.'))) return; call(APPS_API, '/apps/' + app.id + '/secret', { method: 'POST' }).then(function (r) { secretBox.textContent = ''; secretBox.appendChild(el('div', { class: 'notice warn' }, [el('b', { text: 'Neues Secret: ' }), code(r.client_secret)])); }).catch(function (e) { toast('err', e.message); }); }, text: 'Secret erneuern' }));
+    if (edit) extra.push(el('button', { class: 'btn small danger', type: 'button', onclick: function () { if (!confirm(kkT('App „{n}“ endgültig löschen? Alle Nutzerzugriffe enden.', { n: app.name }))) return; call(APPS_API, '/apps/' + app.id, { method: 'DELETE' }).then(pageApps).catch(function (e) { toast('err', e.message); }); }, text: 'App löschen' }));
     drawPreview();
     mount([el('h1', { text: edit ? 'App bearbeiten' : 'Neue App' }), el('div', { class: 'two' }, [el('div', { class: 'card' }, [fm, el('div', { class: 'btns' }, extra)]), el('div', { class: 'sticky' }, [preview])])]);
   }
@@ -271,9 +273,10 @@
   function route() {
     var r = (location.hash || '#/').replace(/^#\/?/, '').split('/')[0] || 'home';
     markNav(r === 'docs' || r === 'apps' ? r : 'home'); renderUser();
-    document.title = (r === 'docs' ? 'Dokumentation' : r === 'apps' ? 'Meine Apps' : 'Karteikasten Developer') + (r === 'home' ? '' : ' – Karteikasten Developer');
+    document.title = kkT(r === 'docs' ? 'Dokumentation – Karteikasten Developer' : r === 'apps' ? 'Meine Apps – Karteikasten Developer' : 'Karteikasten Developer');
     if (r === 'docs') pageDocs(); else if (r === 'apps') pageApps(); else pageHome();
   }
+  document.querySelector('.top .in').appendChild(kkLangSelect());
   window.addEventListener('hashchange', route);
   handleCallback().then(route);
 })();
