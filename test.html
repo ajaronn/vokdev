@@ -26,6 +26,7 @@
   <h1>Test-App</h1>
   <p class="muted">Simuliert eine Dritt-App mit „Mit Karteikasten fortfahren“. Trage die client_id deiner App ein und probiere Anmeldung und API aus.</p>
 
+  <div class="notice err" id="jsfail">Die Test-Skripte konnten nicht geladen werden. Prüfe, ob die Dateien test.js und i18n.js im Ordner vokdev auf GitHub liegen, und lade die Seite mit Strg+Shift+R neu.</div>
   <div class="notice err hidden" id="msg" role="alert"></div>
 
   <section class="card">
@@ -61,7 +62,7 @@
   </section>
 </main>
 <p class="foot"><a href="./#/test">Anleitung zur Test-App</a> · <a href="./">Zur Developer-Seite</a></p>
-<script src="i18n.js"></script>
-<script src="test.js"></script>
+<script src="i18n.js?v=2"></script>
+<script src="test.js?v=2"></script>
 </body>
 </html>
