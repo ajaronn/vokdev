@@ -162,8 +162,48 @@
         ep('GET', '/progress', 'Fortschritt aller Listen (progress.read)'), ep('GET', '/lists/{id}/progress', 'Fortschritt einer Liste (progress.read)')]),
       el('section', { class: 'card' }, [el('h2', { text: '4. Fehler & Limits' }),
         el('p', { text: 'Fehler: {"error":{"code","message"}}. 401 Token ungültig · 403 fehlende Berechtigung oder widerrufen · 429 Rate-Limit (120 Anfragen/Minute je Nutzer und App) · 409 gleichzeitige Änderung (erneut versuchen).' }),
-        el('p', { class: 'muted small', text: 'Limits: 200 Listen, 5000 Vokabeln je Liste. Änderungen über die API erscheinen in der Karteikasten-App nach dem nächsten Laden/Synchronisieren.' })])
+        el('p', { class: 'muted small', text: 'Limits: 200 Listen, 5000 Vokabeln je Liste. Änderungen über die API erscheinen in der Karteikasten-App nach dem nächsten Laden/Synchronisieren.' })]),
+      el('section', { class: 'card' }, [el('h2', { text: '5. Ausprobieren' }),
+        el('p', { text: 'Mit der Test-App kannst du Anmeldung und API direkt im Browser testen.' }),
+        el('a', { class: 'btn', href: '#/test', text: 'Zur Test-App' })])
     ]);
+  }
+
+  function pageTest() {
+    var testUrl = CONFIG.REDIRECT_URI + 'test.html';
+    var nodes = [
+      el('h1', { text: 'Test-App' }),
+      el('section', { class: 'card' }, [
+        el('p', { text: 'Mit der Test-App probierst du aus, wie sich eine fremde App mit „Mit Karteikasten fortfahren“ anmeldet und die REST-API nutzt – ohne eigene Webseite bauen zu müssen.' }),
+        el('ol', { class: 'steps' }, [
+          el('li', { text: 'Lege unter „Meine Apps“ eine App vom Typ „Öffentlich“ an.' }),
+          el('li', {}, [document.createTextNode(kkT('Trage als Weiterleitungs-URI exakt diese Adresse ein:') + ' '), code(testUrl)]),
+          el('li', { text: 'Wähle die Berechtigungen, die du testen willst.' }),
+          el('li', { text: 'Öffne die Test-App, trage die client_id ein und melde dich an. Danach kannst du API-Anfragen senden.' })
+        ]),
+        el('div', { class: 'btns' }, [el('a', { class: 'btn primary', href: 'test.html', text: 'Test-App öffnen' }), el('a', { class: 'btn', href: '#/apps', text: 'Meine Apps' })])
+      ])
+    ];
+    if (!getSession()) {
+      nodes.push(el('section', { class: 'card center' }, [el('p', { class: 'muted', text: 'Melde dich an, um deine Apps hier direkt zum Testen auszuwählen.' }),
+        el('button', { class: 'btn primary', onclick: login, text: 'Mit Karteikasten fortfahren' })]));
+      mount(nodes); return;
+    }
+    var box = el('section', { class: 'card' }, [el('h2', { text: 'Deine Apps testen' }), el('div', { class: 'spinner' })]);
+    nodes.push(box); mount(nodes);
+    call(APPS_API, '/apps').then(function (r) {
+      var apps = (r.data || []).filter(function (a) { return a.client_type === 'public' && a.status === 'active'; });
+      box.textContent = ''; box.appendChild(el('h2', { text: 'Deine Apps testen' }));
+      if (!apps.length) { box.appendChild(el('p', { class: 'muted', text: 'Du hast noch keine öffentliche App.' })); kkTranslateTree(box); return; }
+      var list = el('div', { class: 'tgrid' });
+      apps.forEach(function (a) {
+        var lu = httpsUrl(a.logo_url), ok = (a.redirect_uris || []).indexOf(testUrl) >= 0;
+        list.appendChild(el('div', { class: 'trow' }, [lu ? el('img', { class: 'logo', src: lu, alt: '' }) : el('div', { class: 'logo', text: a.name[0].toUpperCase() }),
+          el('div', { class: 'grow' }, [el('b', { text: a.name }), el('p', { class: 'hint', text: ok ? 'Weiterleitungs-URI der Test-App ist eingetragen.' : 'Die Weiterleitungs-URI der Test-App fehlt noch (Bearbeiten).' })]),
+          el('a', { class: 'btn small' + (ok ? ' primary' : ''), href: 'test.html?client_id=' + encodeURIComponent(a.client_id), text: 'Mit dieser App testen' })]));
+      });
+      box.appendChild(list); kkTranslateTree(box);
+    }).catch(function (e) { box.textContent = ''; box.appendChild(el('div', { class: 'notice err', text: kkT('Konnte nicht geladen werden: {m}', { m: e.message }) })); });
   }
 
   function pageApps() {
@@ -272,9 +312,9 @@
   /* ---------- Routing ---------- */
   function route() {
     var r = (location.hash || '#/').replace(/^#\/?/, '').split('/')[0] || 'home';
-    markNav(r === 'docs' || r === 'apps' ? r : 'home'); renderUser();
-    document.title = kkT(r === 'docs' ? 'Dokumentation – Karteikasten Developer' : r === 'apps' ? 'Meine Apps – Karteikasten Developer' : 'Karteikasten Developer');
-    if (r === 'docs') pageDocs(); else if (r === 'apps') pageApps(); else pageHome();
+    markNav(r === 'docs' || r === 'apps' || r === 'test' ? r : 'home'); renderUser();
+    document.title = kkT(r === 'docs' ? 'Dokumentation – Karteikasten Developer' : r === 'apps' ? 'Meine Apps – Karteikasten Developer' : r === 'test' ? 'Test-App – Karteikasten Developer' : 'Karteikasten Developer');
+    if (r === 'docs') pageDocs(); else if (r === 'apps') pageApps(); else if (r === 'test') pageTest(); else pageHome();
   }
   document.querySelector('.top .in').appendChild(kkLangSelect());
   window.addEventListener('hashchange', route);
