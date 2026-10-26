@@ -112,6 +112,28 @@
   }
   function markNav(r) { document.querySelectorAll('.top nav a').forEach(function (a) { if (a.dataset.r === r) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); }); }
 
+
+  /* ---------- Zustimmungskarte (geteilt von Formular-Vorschau und Consent-Vorschau) ---------- */
+  var consentPrefill = null;
+  function scopeInfo(k) { var s = window.KK_SCOPES && window.KK_SCOPES[k]; return s || (SCOPES[k] ? { t: SCOPES[k][0], d: SCOPES[k][1] } : null); }
+  function consentCard(o) {
+    var nm = o.name || kkT('Deine App'), items = [];
+    (o.scopes || []).forEach(function (k) {
+      var s = scopeInfo(k); if (!s) return;
+      items.push(el('li', { class: s.danger ? 'danger' : null }, [el('input', { type: 'checkbox', id: 'cp_' + k, checked: true, disabled: !o.interactive }),
+        el('label', { for: 'cp_' + k }, [el('b', { text: s.t }), el('span', { class: 'd', text: s.d })])]));
+    });
+    if (!items.length) items.push(el('li', { class: 'muted', text: 'Keine Berechtigung ausgewählt.' }));
+    return el('div', { class: 'card' }, [
+      el('div', { class: 'pair' }, [o.logo ? el('img', { class: 'logo', src: o.logo, alt: '' }) : el('div', { class: 'logo', text: nm[0].toUpperCase() }), el('span', { class: 'arrow', text: '→' }), el('img', { class: 'logo', src: 'icon-192.png', alt: '' })]),
+      el('h2', { class: 'center', text: kkT('{name} möchte auf dein Karteikasten-Konto zugreifen', { name: nm }) }),
+      o.desc ? el('p', { class: 'center muted small', text: o.desc }) : null,
+      el('div', { class: 'header-rule' }), el('ul', { class: 'scopes' }, items),
+      o.interactive ? el('p', { class: 'hint', text: 'Nutzer können einzelne Berechtigungen abwählen.' }) : null,
+      el('div', { class: 'notice warn', text: 'Diese App wurde nicht von Karteikasten geprüft.' }),
+      el('div', { class: 'btns' }, [el('span', { class: 'btn', text: 'Ablehnen' }), el('span', { class: 'btn primary', text: 'Erlauben' })])]);
+  }
+
   /* ---------- Seiten ---------- */
   function pageHome() {
     var s = getSession();
@@ -272,7 +294,7 @@
   }
 
   function drawApps(status, apps) {
-    var nodes = [el('h1', { text: 'Meine Apps' })];
+    var nodes = [el('h1', { text: 'Meine Apps' })], statsBoxes = [];
     if (!status.two_factor) nodes.push(el('div', { class: 'notice warn' }, [
       document.createTextNode('Zum Erstellen und Ändern von Apps muss die Zwei-Faktor-Authentifizierung aktiviert sein. Aktiviere sie in Karteikasten unter Einstellungen → Konto. '),
       el('a', { href: CONFIG.MAIN_APP, text: 'Karteikasten öffnen' })]));
@@ -283,12 +305,40 @@
       nodes.push(el('section', { class: 'card' }, [
         el('div', { class: 'approw' }, [lu ? el('img', { class: 'logo', src: lu, alt: '' }) : el('div', { class: 'logo', text: a.name[0].toUpperCase() }),
           el('div', { class: 'grow' }, [el('h2', { text: a.name }), el('span', { class: 'tag', text: a.client_type === 'public' ? 'öffentlich (PKCE)' : 'vertraulich' }), a.status !== 'active' ? el('span', { class: 'tag', text: ' gesperrt' }) : null]),
+          el('button', { class: 'btn small', onclick: function () { consentPrefill = a; location.hash = '#/consent'; }, text: 'Consent-Vorschau' }),
           el('button', { class: 'btn small', onclick: function () { form(a, status); }, text: 'Bearbeiten' })]),
         el('p', { class: 'kv' }, [document.createTextNode('Client-ID: '), code(a.client_id || '–')]),
         el('p', { class: 'kv' }, [document.createTextNode('Berechtigungen: '), document.createTextNode(a.scopes.join(', '))]),
-        el('p', { class: 'kv' }, [document.createTextNode('Weiterleitung: '), document.createTextNode(a.redirect_uris.join(', '))])]));
+        el('p', { class: 'kv' }, [document.createTextNode('Weiterleitung: '), document.createTextNode(a.redirect_uris.join(', '))]),
+        (function () { var box = el('div', { class: 'stats' }); statsBoxes.push([a, box]); return box; })()]));
     });
     mount(nodes);
+    statsBoxes.forEach(function (p) { loadStats(p[0], p[1]); });
+  }
+
+
+  function loadStats(app, box) {
+    var DAYS = 14;
+    box.textContent = ''; box.appendChild(el('p', { class: 'hint', text: 'Statistiken werden geladen …' })); kkTranslateTree(box);
+    call(APPS_API, '/apps/' + app.id + '/stats?days=' + DAYS).then(function (s) {
+      var days = s.daily || [], n = days.length || DAYS, req = +s.requests_total || 0, err = +s.errors_total || 0, users = +s.users || 0;
+      var nf = new Intl.NumberFormat(kkLocale()), nf1 = new Intl.NumberFormat(kkLocale(), { maximumFractionDigits: 1 });
+      box.textContent = ''; box.appendChild(el('h3', { text: 'Statistiken' }));
+      if (!req && !users) { box.appendChild(el('p', { class: 'hint', text: 'Noch keine Nutzung. Sobald Nutzer deine App verbinden und die API aufrufen, erscheinen hier Zahlen.' })); kkTranslateTree(box); return; }
+      function kpi(label, val) { return el('div', { class: 'kpi' }, [el('b', { text: val }), el('span', { text: label })]); }
+      box.appendChild(el('div', { class: 'kpis' }, [kpi('Nutzer', nf.format(users)), kpi('Ø Anfragen pro Tag', nf1.format(req / n)), kpi('Fehlerquote', nf1.format(req ? err / req * 100 : 0) + ' %')]));
+      var max = days.reduce(function (m, d) { return Math.max(m, +d.requests || 0); }, 1);
+      var bars = el('div', { class: 'bars', role: 'img', 'aria-label': kkT('Anfragen pro Tag, letzte {n} Tage', { n: n }) });
+      days.forEach(function (d) {
+        var r = +d.requests || 0, e = +d.errors || 0, b = el('i', { title: kkT('{d}: {r} Anfragen, {e} Fehler', { d: d.day, r: nf.format(r), e: nf.format(e) }) });
+        b.style.height = Math.max(3, r / max * 100) + '%'; if (r && e / r > 0.1) b.className = 'e'; bars.appendChild(b);
+      });
+      box.appendChild(bars); box.appendChild(el('p', { class: 'hint', text: kkT('Letzte {n} Tage. Rote Balken: Tage mit mehr als 10 % Fehlern. Als Fehler zählen Antworten ab Status 400.', { n: n }) }));
+      kkTranslateTree(box);
+    }).catch(function () {
+      box.textContent = ''; box.appendChild(el('p', { class: 'hint', text: 'Statistiken konnten nicht geladen werden.' }));
+      box.appendChild(el('button', { class: 'btn small', type: 'button', onclick: function () { loadStats(app, box); }, text: 'Erneut versuchen' })); kkTranslateTree(box);
+    });
   }
 
   function form(app, status) {
@@ -314,14 +364,7 @@
       var lu = logoData ? logoData.url : httpsUrl(app.logo_url), nm = f.name.value || 'Deine App';
       var chosen = scopeBoxes.filter(function (b) { return b.checked; });
       preview.appendChild(el('p', { class: 'hand muted center', text: 'Vorschau Zustimmungsseite' }));
-      preview.appendChild(el('div', { class: 'card' }, [
-        el('div', { class: 'pair' }, [lu ? el('img', { class: 'logo', src: lu, alt: '' }) : el('div', { class: 'logo', text: nm[0].toUpperCase() }), el('span', { class: 'arrow', text: '→' }), el('img', { class: 'logo', src: 'icon-192.png', alt: '' })]),
-        el('h2', { class: 'center', text: kkT('{name} möchte auf dein Karteikasten-Konto zugreifen', { name: nm }) }),
-        f.description.value ? el('p', { class: 'center muted small', text: f.description.value }) : null,
-        el('div', { class: 'header-rule' }),
-        el('ul', { class: 'scopes' }, chosen.map(function (b) { return el('li', null, [el('input', { type: 'checkbox', checked: true, disabled: true }), el('label', null, [el('b', { text: SCOPES[b.value][0] }), el('span', { class: 'd', text: SCOPES[b.value][1] })])]); })),
-        el('div', { class: 'notice warn', text: 'Diese App wurde nicht von Karteikasten geprüft.' }),
-        el('div', { class: 'btns' }, [el('span', { class: 'btn', text: 'Ablehnen' }), el('span', { class: 'btn primary', text: 'Erlauben' })])]));
+      preview.appendChild(consentCard({ name: nm, desc: f.description.value, logo: lu, scopes: chosen.map(function (b) { return b.value; }) }));
       kkTranslateTree(preview);
     }
     f.logo.addEventListener('change', function () {
@@ -398,13 +441,122 @@
         el('div', { class: 'btns' }, [send]), out]),
       el('p', { class: 'muted small' }, [kkT('Fragen zur Lern-App selbst? Dort gibt es einen eigenen Support: '), el('a', { href: CONFIG.MAIN_APP, text: 'Karteikasten' })])]);
   }
+  var FAQ = [
+ [
+  "Fehler „redirect_uri passt nicht“ bei der Anmeldung",
+  "Die redirect_uri in deiner Anfrage ist nicht exakt so bei deiner App eingetragen. Schon ein fehlender Schrägstrich am Ende, http statt https oder andere Groß-/Kleinschreibung reicht.",
+  "Öffne „Meine Apps“ → Bearbeiten und vergleiche die URI Zeichen für Zeichen mit der in deinem Code. Platzhalter (*) sind nicht erlaubt, http geht nur für localhost. Nach dem Speichern erneut anmelden.",
+  null
+ ],
+ [
+  "Fehler „code_challenge fehlt“ oder „code_verifier ungültig“ (PKCE)",
+  "PKCE ist Pflicht. Entweder fehlt code_challenge im Autorisierungs-Aufruf, oder der code_verifier beim Token-Aufruf passt nicht zur Challenge (zum Beispiel, weil die Seite zwischendurch neu geladen wurde).",
+  "Erzeuge pro Anmeldung einen neuen Verifier, sende die S256-Challenge und speichere den Verifier bis zur Rückkehr (z. B. in sessionStorage). Der Code-Generator liefert fertigen Code.",
+  "const verifier = b64url(crypto.getRandomValues(new Uint8Array(48)));\nconst challenge = b64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));\n// authorize: code_challenge=<challenge>&code_challenge_method=S256\n// token:     code_verifier=<verifier>"
+ ],
+ [
+  "Die API antwortet mit 403, obwohl der Token noch gültig aussieht",
+  "Der Nutzer hat den Zugriff unter „Verbundene Apps“ widerrufen oder einzelne Berechtigungen entzogen. Ein bereits ausgestellter Access-Token ist technisch bis zu seinem Ablauf noch gültig, die API prüft aber die aktuelle Zustimmung.",
+  "Behandle 403 als „Zugriff entzogen“: Lösche die gespeicherten Tokens und starte die Anmeldung neu, damit der Nutzer erneut zustimmen kann. Wiederhole die Anfrage nicht automatisch.",
+  null
+ ],
+ [
+  "Token-Erneuerung schlägt fehl (invalid_grant, Refresh-Token abgelaufen)",
+  "Das Refresh-Token ist abgelaufen, wurde widerrufen oder ist schon durch ein neueres ersetzt. Refresh-Tokens werden bei jeder Erneuerung ausgetauscht; wer das alte erneut sendet (z. B. aus zwei Tabs gleichzeitig), bekommt einen Fehler.",
+  "Speichere nach jeder Erneuerung sofort das neue Refresh-Token und erneuere immer nur an einer Stelle gleichzeitig. Schlägt es trotzdem fehl, ist eine neue Anmeldung nötig: Leite den Nutzer wieder zur Autorisierung.",
+  null
+ ],
+ [
+  "Antwort 401 bei API-Aufrufen",
+  "Der Access-Token fehlt, ist abgelaufen oder ungültig. Access-Tokens laufen nach kurzer Zeit ab.",
+  "Sende den Header „Authorization: Bearer ACCESS_TOKEN“, erneuere den Token kurz vor Ablauf (expires_in) mit dem Refresh-Token und versuche die Anfrage danach einmal erneut.",
+  null
+ ],
+ [
+  "Fehler 403: Berechtigung fehlt",
+  "Der Endpunkt braucht eine Berechtigung, die deine App nicht deklariert hat oder die der Nutzer auf der Zustimmungsseite abgewählt hat.",
+  "Prüfe in der Dokumentation, welche Berechtigung der Endpunkt braucht, und ergänze sie unter „Meine Apps“. Bestehende Nutzer müssen danach erneut zustimmen. Rechne damit, dass Nutzer Berechtigungen abwählen: Fange 403 ab und biete eine Funktion mit weniger Rechten an. In der Consent-Vorschau siehst du, was Nutzer sehen.",
+  null
+ ],
+ [
+  "Antwort 429: zu viele Anfragen",
+  "Das Limit beträgt 120 Anfragen pro Minute je Nutzer und App.",
+  "Warte kurz und wiederhole mit wachsendem Abstand (Backoff). Sende Vokabeln gesammelt als Array (bis zu 500 je Anfrage) statt einzeln.",
+  null
+ ],
+ [
+  "Fehler 409 beim Ändern",
+  "Dieselbe Liste wurde gleichzeitig geändert, etwa in der Karteikasten-App oder durch eine zweite Anfrage.",
+  "Wiederhole die Anfrage nach einer kurzen Pause und sende Änderungen an einer Liste nacheinander statt parallel.",
+  null
+ ],
+ [
+  "Ich kann keine App anlegen oder speichern",
+  "Zum Erstellen und Ändern ist 2FA Pflicht. Außerdem darf der Name „Karteikasten“ nicht enthalten, es sind höchstens 10 Apps je Konto erlaubt, und Weiterleitungs-URIs müssen https sein, ohne Platzhalter und ohne #.",
+  "Aktiviere 2FA in Karteikasten unter Einstellungen → Konto, ändere den Namen und lies die Meldung, die über dem Formular erscheint.",
+  null
+ ],
+ [
+  "Auf der Zustimmungsseite steht „Diese App wurde nicht von Karteikasten geprüft“",
+  "Das ist kein Fehler. Der Hinweis erscheint bei Apps, die nicht von Karteikasten geprüft wurden.",
+  "Er lässt sich in den App-Einstellungen nicht abschalten. Du schaffst Vertrauen mit gutem Logo, klarer Beschreibung, Webseite, Datenschutzerklärung und Nutzungsbedingungen und mit möglichst wenigen Berechtigungen.",
+  null
+ ]
+];
+
+  function pageFaq() {
+    var q = el('input', { type: 'search', class: 'faqsearch', 'aria-label': 'Fehlermeldung oder Stichwort suchen …', placeholder: 'Fehlermeldung oder Stichwort suchen …' });
+    var list = el('div', { class: 'faq' }), none = el('p', { class: 'muted', hidden: true, text: 'Keine Treffer.' });
+    FAQ.forEach(function (f) {
+      var body = el('div', { class: 'body' }, [el('p', null, [el('b', { text: 'Ursache:' }), el('span', { text: ' ' + f[1] })]), el('p', null, [el('b', { text: 'Lösung:' }), el('span', { text: ' ' + f[2] })])]);
+      if (f[3]) body.appendChild(pre(f[3]));
+      list.appendChild(el('details', null, [el('summary', { text: f[0] }), body]));
+    });
+    q.addEventListener('input', function () {
+      var t = q.value.trim().toLowerCase(), shown = 0;
+      list.querySelectorAll('details').forEach(function (d) { var ok = !t || d.textContent.toLowerCase().indexOf(t) >= 0; d.hidden = !ok; if (ok) shown++; if (t && ok) d.open = true; });
+      none.hidden = shown > 0;
+    });
+    mount([el('h1', { text: 'FAQ & Troubleshooting' }), el('p', { class: 'muted', text: 'Typische Probleme bei Anmeldung und API, jeweils mit Ursache und Lösung.' }), q, list, none,
+      el('p', { class: 'muted' }, [document.createTextNode(kkT('Nichts passendes dabei?') + ' '), el('a', { href: '#/support', text: kkT('Zum Support') })])]);
+  }
+
+  function pageConsent() {
+    var pre0 = consentPrefill; consentPrefill = null;
+    var name = el('input', { type: 'text', id: 'c_name', maxlength: 60, value: pre0 ? pre0.name : '' });
+    var desc = el('textarea', { id: 'c_desc', maxlength: 300, text: pre0 ? (pre0.description || '') : '' });
+    var keys = Object.keys(SCOPES), boxes = keys.map(function (k) { return el('input', { type: 'checkbox', id: 'cs_' + k, value: k, checked: pre0 ? pre0.scopes.indexOf(k) >= 0 : ['profile.read', 'lists.read'].indexOf(k) >= 0 }); });
+    var out = el('div', { class: 'preview' }), warn = el('div');
+    function set(fn) { boxes.forEach(function (b) { b.checked = fn(b.value); }); draw(); }
+    function draw() {
+      var chosen = boxes.filter(function (b) { return b.checked; }).map(function (b) { return b.value; });
+      var logo = pre0 && httpsUrl(pre0.logo_url);
+      out.textContent = ''; out.appendChild(el('p', { class: 'hand muted center', text: 'Vorschau Zustimmungsseite' }));
+      out.appendChild(consentCard({ name: name.value.trim(), desc: desc.value.trim(), logo: logo, scopes: chosen, interactive: true }));
+      warn.textContent = '';
+      if (chosen.some(function (k) { var s = scopeInfo(k); return s && s.danger; })) warn.appendChild(el('div', { class: 'notice warn', text: 'Sensible Berechtigung: Sie wird auf der Zustimmungsseite rot markiert. Fordere sie nur an, wenn deine App sie wirklich braucht.' }));
+      kkTranslateTree(out); kkTranslateTree(warn);
+    }
+    [name, desc].forEach(function (i) { i.addEventListener('input', draw); }); boxes.forEach(function (b) { b.addEventListener('change', draw); });
+    var chk = el('fieldset', { class: 'card' }, [el('legend', { class: 'hand', text: 'Berechtigungen' })].concat(keys.map(function (k, i) {
+      return el('div', { class: 'chk' }, [boxes[i], el('label', { for: 'cs_' + k }, [el('b', { text: scopeInfo(k).t })])]); })));
+    var presets = el('div', { class: 'btns' }, [
+      el('button', { class: 'btn small', type: 'button', text: 'Nur lesen', onclick: function () { set(function (k) { return /\.read$/.test(k); }); } }),
+      el('button', { class: 'btn small', type: 'button', text: 'Alle', onclick: function () { set(function () { return true; }); } }),
+      el('button', { class: 'btn small', type: 'button', text: 'Keine', onclick: function () { set(function () { return false; }); } })]);
+    mount([el('h1', { text: 'Consent-Vorschau' }),
+      pre0 ? el('div', { class: 'notice ok', text: kkT('Vorschau für deine App „{n}“ geladen. Änderungen hier speichern nichts.', { n: pre0.name }) }) : null,
+      el('p', { class: 'muted', text: 'Sieh dir an, wie die Zustimmungsseite für die gewählten Berechtigungen aussieht. Nutzer sehen genau diese Texte in ihrer Sprache. Wechsle oben rechts die Sprache, um alle Übersetzungen zu prüfen.' }),
+      el('div', { class: 'two' }, [el('div', { class: 'card' }, [field('Name der App', name, 'c_name'), field('Kurzbeschreibung', desc, 'c_desc'), chk, presets, warn]), el('div', { class: 'sticky' }, [out])])]);
+    draw();
+  }
 
   /* ---------- Routing ---------- */
   function route() {
     var r = (location.hash || '#/').replace(/^#\/?/, '').split('/')[0] || 'home';
-    markNav(r === 'docs' || r === 'apps' || r === 'test' || r === 'code' || r === 'support' ? r : 'home'); renderUser();
-    document.title = kkT(r === 'docs' ? 'Dokumentation – Karteikasten Developer' : r === 'apps' ? 'Meine Apps – Karteikasten Developer' : r === 'test' ? 'Test-App – Karteikasten Developer' : r === 'code' ? 'Code-Generator – Karteikasten Developer' : r === 'support' ? 'Support – Karteikasten Developer' : 'Karteikasten Developer');
-    if (r === 'docs') pageDocs(); else if (r === 'apps') pageApps(); else if (r === 'test') pageTest(); else if (r === 'code') pageCode(); else if (r === 'support') pageSupport(); else pageHome();
+    markNav(r === 'docs' || r === 'apps' || r === 'test' || r === 'code' || r === 'support' || r === 'faq' || r === 'consent' ? r : 'home'); renderUser();
+    document.title = kkT(r === 'docs' ? 'Dokumentation – Karteikasten Developer' : r === 'apps' ? 'Meine Apps – Karteikasten Developer' : r === 'test' ? 'Test-App – Karteikasten Developer' : r === 'code' ? 'Code-Generator – Karteikasten Developer' : r === 'support' ? 'Support – Karteikasten Developer' : r === 'faq' ? 'FAQ & Troubleshooting – Karteikasten Developer' : r === 'consent' ? 'Consent-Vorschau – Karteikasten Developer' : 'Karteikasten Developer');
+    if (r === 'docs') pageDocs(); else if (r === 'apps') pageApps(); else if (r === 'test') pageTest(); else if (r === 'code') pageCode(); else if (r === 'support') pageSupport(); else if (r === 'faq') pageFaq(); else if (r === 'consent') pageConsent(); else pageHome();
   }
   document.querySelector('.top .in').appendChild(kkLangSelect());
   window.addEventListener('hashchange', route);
