@@ -264,3 +264,247 @@ window.kkAdd && window.kkAdd({
   'Danke! Deine Nachricht wurde gesendet.': ['Thank you! Your message has been sent.', 'Obrigado! Sua mensagem foi enviada.'],
   'Senden fehlgeschlagen. Bitte versuche es später erneut.': ['Sending failed. Please try again later.', 'Falha ao enviar. Tente novamente mais tarde.']
 });
+
+/* --- FAQ, Consent-Vorschau, App-Statistiken --- */
+kkAdd({
+ "Fehler „redirect_uri passt nicht“ bei der Anmeldung": [
+  "Error “redirect_uri does not match” when signing in",
+  "Erro “redirect_uri não corresponde” ao entrar"
+ ],
+ "Die redirect_uri in deiner Anfrage ist nicht exakt so bei deiner App eingetragen. Schon ein fehlender Schrägstrich am Ende, http statt https oder andere Groß-/Kleinschreibung reicht.": [
+  "The redirect_uri in your request is not registered exactly like that for your app. A missing trailing slash, http instead of https, or different capitalisation is enough.",
+  "O redirect_uri da sua solicitação não está cadastrado exatamente assim no seu app. Uma barra final faltando, http em vez de https ou maiúsculas diferentes já bastam."
+ ],
+ "Öffne „Meine Apps“ → Bearbeiten und vergleiche die URI Zeichen für Zeichen mit der in deinem Code. Platzhalter (*) sind nicht erlaubt, http geht nur für localhost. Nach dem Speichern erneut anmelden.": [
+  "Open “My apps” → Edit and compare the URI character by character with the one in your code. Wildcards (*) are not allowed, and http only works for localhost. Sign in again after saving.",
+  "Abra “Meus apps” → Editar e compare o URI caractere por caractere com o do seu código. Curingas (*) não são permitidos e http só funciona para localhost. Entre novamente após salvar."
+ ],
+ "Fehler „code_challenge fehlt“ oder „code_verifier ungültig“ (PKCE)": [
+  "Error “code_challenge missing” or “code_verifier invalid” (PKCE)",
+  "Erro “code_challenge ausente” ou “code_verifier inválido” (PKCE)"
+ ],
+ "PKCE ist Pflicht. Entweder fehlt code_challenge im Autorisierungs-Aufruf, oder der code_verifier beim Token-Aufruf passt nicht zur Challenge (zum Beispiel, weil die Seite zwischendurch neu geladen wurde).": [
+  "PKCE is mandatory. Either code_challenge is missing from the authorization request, or the code_verifier in the token request does not match the challenge (for example because the page was reloaded in between).",
+  "O PKCE é obrigatório. Ou falta o code_challenge na solicitação de autorização, ou o code_verifier na solicitação do token não corresponde ao challenge (por exemplo, porque a página foi recarregada no meio do caminho)."
+ ],
+ "Erzeuge pro Anmeldung einen neuen Verifier, sende die S256-Challenge und speichere den Verifier bis zur Rückkehr (z. B. in sessionStorage). Der Code-Generator liefert fertigen Code.": [
+  "Create a new verifier for every sign-in, send the S256 challenge and keep the verifier until the user returns (e.g. in sessionStorage). The code generator provides ready-made code.",
+  "Gere um novo verifier a cada login, envie o challenge S256 e guarde o verifier até o retorno do usuário (por exemplo, em sessionStorage). O gerador de código fornece o código pronto."
+ ],
+ "Die API antwortet mit 403, obwohl der Token noch gültig aussieht": [
+  "The API returns 403 although the token still looks valid",
+  "A API responde 403 embora o token pareça válido"
+ ],
+ "Der Nutzer hat den Zugriff unter „Verbundene Apps“ widerrufen oder einzelne Berechtigungen entzogen. Ein bereits ausgestellter Access-Token ist technisch bis zu seinem Ablauf noch gültig, die API prüft aber die aktuelle Zustimmung.": [
+  "The user revoked access under “Connected apps” or removed individual permissions. An access token that was already issued is technically valid until it expires, but the API checks the current consent.",
+  "O usuário revogou o acesso em “Apps conectados” ou removeu permissões individuais. Um access token já emitido ainda é tecnicamente válido até expirar, mas a API verifica o consentimento atual."
+ ],
+ "Behandle 403 als „Zugriff entzogen“: Lösche die gespeicherten Tokens und starte die Anmeldung neu, damit der Nutzer erneut zustimmen kann. Wiederhole die Anfrage nicht automatisch.": [
+  "Treat 403 as “access withdrawn”: delete the stored tokens and restart sign-in so the user can consent again. Do not retry the request automatically.",
+  "Trate o 403 como “acesso retirado”: apague os tokens salvos e reinicie o login para que o usuário possa consentir novamente. Não repita a solicitação automaticamente."
+ ],
+ "Token-Erneuerung schlägt fehl (invalid_grant, Refresh-Token abgelaufen)": [
+  "Token refresh fails (invalid_grant, refresh token expired)",
+  "A renovação do token falha (invalid_grant, refresh token expirado)"
+ ],
+ "Das Refresh-Token ist abgelaufen, wurde widerrufen oder ist schon durch ein neueres ersetzt. Refresh-Tokens werden bei jeder Erneuerung ausgetauscht; wer das alte erneut sendet (z. B. aus zwei Tabs gleichzeitig), bekommt einen Fehler.": [
+  "The refresh token has expired, was revoked or has already been replaced by a newer one. Refresh tokens are swapped on every refresh; sending the old one again (e.g. from two tabs at once) causes an error.",
+  "O refresh token expirou, foi revogado ou já foi substituído por um mais novo. Os refresh tokens são trocados a cada renovação; enviar o antigo novamente (por exemplo, de duas abas ao mesmo tempo) causa um erro."
+ ],
+ "Speichere nach jeder Erneuerung sofort das neue Refresh-Token und erneuere immer nur an einer Stelle gleichzeitig. Schlägt es trotzdem fehl, ist eine neue Anmeldung nötig: Leite den Nutzer wieder zur Autorisierung.": [
+  "Store the new refresh token immediately after every refresh and refresh from only one place at a time. If it still fails, a new sign-in is needed: send the user to authorization again.",
+  "Salve o novo refresh token imediatamente após cada renovação e renove de um único lugar por vez. Se ainda falhar, é necessário um novo login: envie o usuário novamente para a autorização."
+ ],
+ "Antwort 401 bei API-Aufrufen": [
+  "Response 401 on API calls",
+  "Resposta 401 nas chamadas da API"
+ ],
+ "Der Access-Token fehlt, ist abgelaufen oder ungültig. Access-Tokens laufen nach kurzer Zeit ab.": [
+  "The access token is missing, expired or invalid. Access tokens expire after a short time.",
+  "O access token está ausente, expirou ou é inválido. Os access tokens expiram após pouco tempo."
+ ],
+ "Sende den Header „Authorization: Bearer ACCESS_TOKEN“, erneuere den Token kurz vor Ablauf (expires_in) mit dem Refresh-Token und versuche die Anfrage danach einmal erneut.": [
+  "Send the header “Authorization: Bearer ACCESS_TOKEN”, refresh the token shortly before it expires (expires_in) using the refresh token, then retry the request once.",
+  "Envie o cabeçalho “Authorization: Bearer ACCESS_TOKEN”, renove o token pouco antes de expirar (expires_in) com o refresh token e repita a solicitação uma vez."
+ ],
+ "Fehler 403: Berechtigung fehlt": [
+  "Error 403: permission missing",
+  "Erro 403: permissão ausente"
+ ],
+ "Der Endpunkt braucht eine Berechtigung, die deine App nicht deklariert hat oder die der Nutzer auf der Zustimmungsseite abgewählt hat.": [
+  "The endpoint needs a permission that your app has not declared or that the user deselected on the consent page.",
+  "O endpoint precisa de uma permissão que seu app não declarou ou que o usuário desmarcou na página de consentimento."
+ ],
+ "Prüfe in der Dokumentation, welche Berechtigung der Endpunkt braucht, und ergänze sie unter „Meine Apps“. Bestehende Nutzer müssen danach erneut zustimmen. Rechne damit, dass Nutzer Berechtigungen abwählen: Fange 403 ab und biete eine Funktion mit weniger Rechten an. In der Consent-Vorschau siehst du, was Nutzer sehen.": [
+  "Check in the documentation which permission the endpoint needs and add it under “My apps”. Existing users must then consent again. Expect users to deselect permissions: catch 403 and offer a feature with fewer rights. The consent preview shows what users see.",
+  "Verifique na documentação qual permissão o endpoint exige e adicione-a em “Meus apps”. Os usuários existentes precisam consentir novamente. Espere que usuários desmarquem permissões: trate o 403 e ofereça uma função com menos direitos. Na prévia de consentimento você vê o que os usuários veem."
+ ],
+ "Antwort 429: zu viele Anfragen": [
+  "Response 429: too many requests",
+  "Resposta 429: muitas solicitações"
+ ],
+ "Das Limit beträgt 120 Anfragen pro Minute je Nutzer und App.": [
+  "The limit is 120 requests per minute per user and app.",
+  "O limite é de 120 solicitações por minuto por usuário e app."
+ ],
+ "Warte kurz und wiederhole mit wachsendem Abstand (Backoff). Sende Vokabeln gesammelt als Array (bis zu 500 je Anfrage) statt einzeln.": [
+  "Wait briefly and retry with increasing delays (backoff). Send vocabulary in batches as an array (up to 500 per request) instead of one by one.",
+  "Aguarde um instante e tente novamente com intervalos crescentes (backoff). Envie o vocabulário em lote como array (até 500 por solicitação) em vez de um por um."
+ ],
+ "Fehler 409 beim Ändern": [
+  "Error 409 when changing data",
+  "Erro 409 ao alterar dados"
+ ],
+ "Dieselbe Liste wurde gleichzeitig geändert, etwa in der Karteikasten-App oder durch eine zweite Anfrage.": [
+  "The same list was changed at the same time, for example in the Karteikasten app or by a second request.",
+  "A mesma lista foi alterada ao mesmo tempo, por exemplo no app Karteikasten ou por uma segunda solicitação."
+ ],
+ "Wiederhole die Anfrage nach einer kurzen Pause und sende Änderungen an einer Liste nacheinander statt parallel.": [
+  "Repeat the request after a short pause and send changes to one list one after another instead of in parallel.",
+  "Repita a solicitação após uma breve pausa e envie as alterações de uma lista em sequência, não em paralelo."
+ ],
+ "Ich kann keine App anlegen oder speichern": [
+  "I cannot create or save an app",
+  "Não consigo criar ou salvar um app"
+ ],
+ "Zum Erstellen und Ändern ist 2FA Pflicht. Außerdem darf der Name „Karteikasten“ nicht enthalten, es sind höchstens 10 Apps je Konto erlaubt, und Weiterleitungs-URIs müssen https sein, ohne Platzhalter und ohne #.": [
+  "2FA is required to create and change apps. Also, the name must not contain “Karteikasten”, at most 10 apps per account are allowed, and redirect URIs must be https, without wildcards and without #.",
+  "A 2FA é obrigatória para criar e alterar apps. Além disso, o nome não pode conter “Karteikasten”, são permitidos no máximo 10 apps por conta e os URIs de redirecionamento devem ser https, sem curingas e sem #."
+ ],
+ "Aktiviere 2FA in Karteikasten unter Einstellungen → Konto, ändere den Namen und lies die Meldung, die über dem Formular erscheint.": [
+  "Enable 2FA in Karteikasten under Settings → Account, change the name and read the message shown above the form.",
+  "Ative a 2FA no Karteikasten em Configurações → Conta, altere o nome e leia a mensagem exibida acima do formulário."
+ ],
+ "Auf der Zustimmungsseite steht „Diese App wurde nicht von Karteikasten geprüft“": [
+  "The consent page says “This app has not been reviewed by Karteikasten”",
+  "A página de consentimento diz “Este app não foi analisado pelo Karteikasten”"
+ ],
+ "Das ist kein Fehler. Der Hinweis erscheint bei Apps, die nicht von Karteikasten geprüft wurden.": [
+  "This is not an error. The notice appears for apps that have not been reviewed by Karteikasten.",
+  "Isso não é um erro. O aviso aparece para apps que não foram analisados pelo Karteikasten."
+ ],
+ "Er lässt sich in den App-Einstellungen nicht abschalten. Du schaffst Vertrauen mit gutem Logo, klarer Beschreibung, Webseite, Datenschutzerklärung und Nutzungsbedingungen und mit möglichst wenigen Berechtigungen.": [
+  "It cannot be switched off in the app settings. You build trust with a good logo, a clear description, a website, privacy policy and terms, and as few permissions as possible.",
+  "Ele não pode ser desativado nas configurações do app. Você gera confiança com um bom logo, descrição clara, site, política de privacidade, termos de uso e o mínimo de permissões possível."
+ ],
+ "Consent-Vorschau": [
+  "Consent preview",
+  "Prévia de consentimento"
+ ],
+ "FAQ & Troubleshooting": [
+  "FAQ & troubleshooting",
+  "FAQ e solução de problemas"
+ ],
+ "FAQ & Troubleshooting – Karteikasten Developer": [
+  "FAQ & troubleshooting – Karteikasten Developer",
+  "FAQ e solução de problemas – Karteikasten Developer"
+ ],
+ "Consent-Vorschau – Karteikasten Developer": [
+  "Consent preview – Karteikasten Developer",
+  "Prévia de consentimento – Karteikasten Developer"
+ ],
+ "Typische Probleme bei Anmeldung und API, jeweils mit Ursache und Lösung.": [
+  "Typical problems with sign-in and the API, each with cause and solution.",
+  "Problemas típicos com login e API, cada um com causa e solução."
+ ],
+ "Fehlermeldung oder Stichwort suchen …": [
+  "Search error message or keyword …",
+  "Buscar mensagem de erro ou palavra-chave …"
+ ],
+ "Ursache:": [
+  "Cause:",
+  "Causa:"
+ ],
+ "Lösung:": [
+  "Solution:",
+  "Solução:"
+ ],
+ "Nichts passendes dabei?": [
+  "Nothing matching?",
+  "Nada que se encaixe?"
+ ],
+ "Zum Support": [
+  "Go to support",
+  "Ir para o suporte"
+ ],
+ "Keine Treffer.": [
+  "No results.",
+  "Nenhum resultado."
+ ],
+ "Sieh dir an, wie die Zustimmungsseite für die gewählten Berechtigungen aussieht. Nutzer sehen genau diese Texte in ihrer Sprache. Wechsle oben rechts die Sprache, um alle Übersetzungen zu prüfen.": [
+  "See what the consent page looks like for the selected permissions. Users see exactly these texts in their language. Switch the language at the top right to check all translations.",
+  "Veja como fica a página de consentimento para as permissões escolhidas. Os usuários veem exatamente estes textos no idioma deles. Troque o idioma no canto superior direito para conferir todas as traduções."
+ ],
+ "Nur lesen": [
+  "Read-only",
+  "Somente leitura"
+ ],
+ "Alle": [
+  "All",
+  "Todas"
+ ],
+ "Keine": [
+  "None",
+  "Nenhuma"
+ ],
+ "Keine Berechtigung ausgewählt.": [
+  "No permission selected.",
+  "Nenhuma permissão selecionada."
+ ],
+ "Nutzer können einzelne Berechtigungen abwählen.": [
+  "Users can deselect individual permissions.",
+  "Os usuários podem desmarcar permissões individuais."
+ ],
+ "Sensible Berechtigung: Sie wird auf der Zustimmungsseite rot markiert. Fordere sie nur an, wenn deine App sie wirklich braucht.": [
+  "Sensitive permission: it is marked red on the consent page. Only request it if your app really needs it.",
+  "Permissão sensível: ela é marcada em vermelho na página de consentimento. Solicite-a apenas se seu app realmente precisar."
+ ],
+ "Vorschau für deine App „{n}“ geladen. Änderungen hier speichern nichts.": [
+  "Preview loaded for your app “{n}”. Changes here are not saved.",
+  "Prévia carregada para o seu app “{n}”. Alterações aqui não são salvas."
+ ],
+ "Deine App": [
+  "Your app",
+  "Seu app"
+ ],
+ "Statistiken": [
+  "Statistics",
+  "Estatísticas"
+ ],
+ "Nutzer": [
+  "Users",
+  "Usuários"
+ ],
+ "Ø Anfragen pro Tag": [
+  "Avg. requests per day",
+  "Média de solicitações por dia"
+ ],
+ "Fehlerquote": [
+  "Error rate",
+  "Taxa de erros"
+ ],
+ "Letzte {n} Tage. Rote Balken: Tage mit mehr als 10 % Fehlern. Als Fehler zählen Antworten ab Status 400.": [
+  "Last {n} days. Red bars: days with more than 10% errors. Responses with status 400 or higher count as errors.",
+  "Últimos {n} dias. Barras vermelhas: dias com mais de 10% de erros. Respostas com status 400 ou superior contam como erros."
+ ],
+ "Anfragen pro Tag, letzte {n} Tage": [
+  "Requests per day, last {n} days",
+  "Solicitações por dia, últimos {n} dias"
+ ],
+ "{d}: {r} Anfragen, {e} Fehler": [
+  "{d}: {r} requests, {e} errors",
+  "{d}: {r} solicitações, {e} erros"
+ ],
+ "Statistiken werden geladen …": [
+  "Loading statistics …",
+  "Carregando estatísticas …"
+ ],
+ "Statistiken konnten nicht geladen werden.": [
+  "Statistics could not be loaded.",
+  "Não foi possível carregar as estatísticas."
+ ],
+ "Noch keine Nutzung. Sobald Nutzer deine App verbinden und die API aufrufen, erscheinen hier Zahlen.": [
+  "No usage yet. Numbers appear here once users connect your app and call the API.",
+  "Ainda sem uso. Os números aparecem aqui quando usuários conectarem seu app e chamarem a API."
+ ]
+});
