@@ -99,3 +99,26 @@ pre.out{white-space:pre-wrap;word-break:break-word;min-height:60px}
 .preview-btn{margin:0 0 14px;display:flex}.preview-btn .btn{flex:0 0 auto}
 .tabs{margin:14px 0 10px}.tabs .btn{flex:0 0 auto}
 .legal-link{display:none!important}
+
+/* ---- Handy: nichts darf breiter als der Bildschirm sein ---- */
+html,body{max-width:100%;overflow-x:clip}
+.card,.wrap{min-width:0}
+.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 14px}
+.tscroll table{margin:0;min-width:520px}
+td code,td .m,th code{white-space:normal;overflow-wrap:anywhere}
+td,th{overflow-wrap:anywhere}
+@media(max-width:640px){
+  .top .in{gap:8px;padding:8px 12px}
+  .top nav a{padding:6px 9px;font-size:15px}
+  .card{padding:16px 14px}
+  .wrap{padding-left:12px;padding-right:12px}
+}
+
+/* ---- Kopfleiste auf dem Handy ein-/ausblendbar ---- */
+.topfold{display:none}
+@media(max-width:640px){
+  .topfold{display:flex;align-items:center;justify-content:center;width:100%;height:28px;padding:0;margin:0;border:0;border-top:1px solid var(--border);border-radius:0;background:var(--surface);color:var(--muted);font:inherit;font-size:14px;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .topfold:active{background:var(--bg)}
+  .top.collapsed .in{display:none}
+  .top.collapsed .topfold{border-top:0}
+}
