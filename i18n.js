@@ -242,3 +242,25 @@
     'Nutzer verwalten und widerrufen ihre Zugriffe unter': ['Users manage and revoke their access under', 'Os usuários gerenciam e revogam seus acessos em']
   });
 })();
+
+window.kkAdd && window.kkAdd({
+  'Support': ['Support', 'Suporte'],
+  'Support – Karteikasten Developer': ['Support – Karteikasten Developer', 'Suporte – Karteikasten Developer'],
+  'Fragen zur API, zu OAuth oder zur Dokumentation? Schreib uns, wir antworten per E-Mail.': ['Questions about the API, OAuth or the documentation? Write to us, we reply by email.', 'Dúvidas sobre a API, OAuth ou a documentação? Escreva para nós, respondemos por e-mail.'],
+  'Deine E-Mail-Adresse (für die Antwort)': ['Your email address (for the reply)', 'Seu e-mail (para a resposta)'],
+  'Thema': ['Topic', 'Assunto'],
+  'Frage zur API': ['Question about the API', 'Pergunta sobre a API'],
+  'Problem mit OAuth / Anmeldung': ['Problem with OAuth / sign-in', 'Problema com OAuth / login'],
+  'Fehler in der Dokumentation': ['Mistake in the documentation', 'Erro na documentação'],
+  'Vorschlag für die Developer-Seite': ['Suggestion for the developer site', 'Sugestão para o site de desenvolvedores'],
+  'Sonstiges': ['Other', 'Outro'],
+  'Deine Nachricht': ['Your message', 'Sua mensagem'],
+  'Was ist passiert? Bitte nenne Scope, Endpunkt und Fehlermeldung, falls vorhanden.': ['What happened? Please give scope, endpoint and error message if available.', 'O que aconteceu? Informe escopo, endpoint e mensagem de erro, se houver.'],
+  'Nachricht senden': ['Send message', 'Enviar mensagem'],
+  'Fragen zur Lern-App selbst? Dort gibt es einen eigenen Support: ': ['Questions about the learning app itself? It has its own support: ', 'Dúvidas sobre o app de estudo? Lá há um suporte próprio: '],
+  'Bitte gib eine gültige E-Mail-Adresse ein, damit wir dir antworten können.': ['Please enter a valid email address so we can reply.', 'Digite um e-mail válido para podermos responder.'],
+  'Bitte schreibe eine Nachricht.': ['Please write a message.', 'Escreva uma mensagem.'],
+  'Wird gesendet …': ['Sending …', 'Enviando …'],
+  'Danke! Deine Nachricht wurde gesendet.': ['Thank you! Your message has been sent.', 'Obrigado! Sua mensagem foi enviada.'],
+  'Senden fehlgeschlagen. Bitte versuche es später erneut.': ['Sending failed. Please try again later.', 'Falha ao enviar. Tente novamente mais tarde.']
+});
