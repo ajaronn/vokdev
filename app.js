@@ -156,7 +156,7 @@
       el('section', { class: 'card' }, [el('h2', { text: '2. Berechtigungen' }),
         el('p', { text: 'Du deklarierst beim Anlegen, welche Berechtigungen deine App maximal braucht. Nutzer sehen sie auf der Zustimmungsseite und können einzelne abwählen. Fordere nur an, was du brauchst.' }),
         el('p', { class: 'small' }, [document.createTextNode(kkT('Nutzer verwalten und widerrufen ihre Zugriffe unter') + ' '), el('a', { href: CONFIG.CONNECTED_APPS, text: kkT('Verbundene Apps') }), document.createTextNode('.')]),
-        el('table', null, [el('thead', null, [el('tr', null, [el('th', { text: 'Scope' }), el('th', { text: 'Bezeichnung' }), el('th', { text: 'Umfang' })])]), el('tbody', null, rows)])]),
+        el('div', { class: 'tscroll' }, [el('table', null, [el('thead', null, [el('tr', null, [el('th', { text: 'Scope' }), el('th', { text: 'Bezeichnung' }), el('th', { text: 'Umfang' })])]), el('tbody', null, rows)])])]),
       el('section', { class: 'card' }, [el('h2', { text: '3. REST-API' }),
         el('p', { class: 'small' }, [document.createTextNode('Basis-URL: '), code(API_BASE)]),
         pre('curl ' + API_BASE + '/lists \\\n  -H "Authorization: Bearer ACCESS_TOKEN"'),
