@@ -364,12 +364,47 @@
   }
   function field(label, input, id, hint) { return el('div', null, [el('label', { class: 'f', for: id, text: label }), input, hint ? el('p', { class: 'hint', text: hint }) : null]); }
 
+
+  /* ---------- Support ---------- */
+  function pageSupport() {
+    var sess = null; try { sess = getSession && getSession(); } catch (e) { }
+    var mail = el('input', { type: 'email', id: 's_mail', autocomplete: 'email', placeholder: 'name@beispiel.de', required: true });
+    var topic = el('select', { id: 's_topic' }, ['Frage zur API', 'Problem mit OAuth / Anmeldung', 'Fehler in der Dokumentation', 'Vorschlag für die Developer-Seite', 'Sonstiges'].map(function (t) { return el('option', { value: t, text: t }); }));
+    var msg = el('textarea', { id: 's_msg', rows: 7, maxlength: 4000, placeholder: 'Was ist passiert? Bitte nenne Scope, Endpunkt und Fehlermeldung, falls vorhanden.' });
+    var out = el('p', { class: 'hint', role: 'status', 'aria-live': 'polite' });
+    var send = el('button', { class: 'btn primary', type: 'button', text: 'Nachricht senden' });
+    send.addEventListener('click', function () {
+      var m = mail.value.trim(), t = msg.value.trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m)) { out.textContent = kkT('Bitte gib eine gültige E-Mail-Adresse ein, damit wir dir antworten können.'); return; }
+      if (!t) { out.textContent = kkT('Bitte schreibe eine Nachricht.'); return; }
+      send.disabled = true; out.textContent = kkT('Wird gesendet …');
+      fetch(CONFIG.SUPABASE_URL + '/functions/v1/support-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: CONFIG.ANON_KEY, Authorization: 'Bearer ' + CONFIG.ANON_KEY },
+        body: JSON.stringify({ lang: window.kkLang, email: m, message: '[Developer] ' + topic.value + '\n\n' + t + '\n\n---- Automatisch mitgesendet ----\nSeite: Karteikasten Developer', context: 'developer-support' })
+      }).then(function (r) {
+        if (!r.ok) throw new Error(r.status);
+        msg.value = ''; out.textContent = kkT('Danke! Deine Nachricht wurde gesendet.');
+      }).catch(function () {
+        out.textContent = kkT('Senden fehlgeschlagen. Bitte versuche es später erneut.');
+      }).then(function () { send.disabled = false; kkTranslateTree(out); });
+    });
+    mount([el('h1', { text: 'Support' }),
+      el('section', { class: 'card' }, [
+        el('p', { text: 'Fragen zur API, zu OAuth oder zur Dokumentation? Schreib uns, wir antworten per E-Mail.' }),
+        field('Deine E-Mail-Adresse (für die Antwort)', mail, 's_mail'),
+        field('Thema', topic, 's_topic'),
+        field('Deine Nachricht', msg, 's_msg'),
+        el('div', { class: 'btns' }, [send]), out]),
+      el('p', { class: 'muted small' }, [kkT('Fragen zur Lern-App selbst? Dort gibt es einen eigenen Support: '), el('a', { href: CONFIG.MAIN_APP, text: 'Karteikasten' })])]);
+  }
+
   /* ---------- Routing ---------- */
   function route() {
     var r = (location.hash || '#/').replace(/^#\/?/, '').split('/')[0] || 'home';
-    markNav(r === 'docs' || r === 'apps' || r === 'test' || r === 'code' ? r : 'home'); renderUser();
-    document.title = kkT(r === 'docs' ? 'Dokumentation – Karteikasten Developer' : r === 'apps' ? 'Meine Apps – Karteikasten Developer' : r === 'test' ? 'Test-App – Karteikasten Developer' : r === 'code' ? 'Code-Generator – Karteikasten Developer' : 'Karteikasten Developer');
-    if (r === 'docs') pageDocs(); else if (r === 'apps') pageApps(); else if (r === 'test') pageTest(); else if (r === 'code') pageCode(); else pageHome();
+    markNav(r === 'docs' || r === 'apps' || r === 'test' || r === 'code' || r === 'support' ? r : 'home'); renderUser();
+    document.title = kkT(r === 'docs' ? 'Dokumentation – Karteikasten Developer' : r === 'apps' ? 'Meine Apps – Karteikasten Developer' : r === 'test' ? 'Test-App – Karteikasten Developer' : r === 'code' ? 'Code-Generator – Karteikasten Developer' : r === 'support' ? 'Support – Karteikasten Developer' : 'Karteikasten Developer');
+    if (r === 'docs') pageDocs(); else if (r === 'apps') pageApps(); else if (r === 'test') pageTest(); else if (r === 'code') pageCode(); else if (r === 'support') pageSupport(); else pageHome();
   }
   document.querySelector('.top .in').appendChild(kkLangSelect());
   window.addEventListener('hashchange', route);
