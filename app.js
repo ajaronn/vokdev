@@ -168,7 +168,8 @@
         ep('GET', '/progress', 'Fortschritt aller Listen (progress.read)'), ep('GET', '/lists/{id}/progress', 'Fortschritt einer Liste (progress.read)')]),
       el('section', { class: 'card' }, [el('h2', { text: '4. Fehler & Limits' }),
         el('p', { text: 'Fehler: {"error":{"code","message"}}. 401 Token ungültig · 403 fehlende Berechtigung oder widerrufen · 429 Rate-Limit (120 Anfragen/Minute je Nutzer und App) · 409 gleichzeitige Änderung (erneut versuchen).' }),
-        el('p', { class: 'muted small', text: 'Limits: 200 Listen, 5000 Vokabeln je Liste. Änderungen über die API erscheinen in der Karteikasten-App nach dem nächsten Laden/Synchronisieren.' })]),
+        el('p', { class: 'muted small', text: 'Limits: 200 Listen, 5000 Vokabeln je Liste. Änderungen über die API erscheinen in der Karteikasten-App nach dem nächsten Laden/Synchronisieren.' }),
+        el('p', { class: 'small' }, [el('a', { href: '#/faq', text: kkT('Mehr dazu in der FAQ.') })])]),
       el('section', { class: 'card' }, [el('h2', { text: '5. Ausprobieren' }),
         el('p', { text: 'Mit der Test-App kannst du Anmeldung und API direkt im Browser testen.' }),
         el('div', { class: 'btns' }, [el('a', { class: 'btn', href: '#/test', text: 'Zur Test-App' }), el('a', { class: 'btn', href: '#/code', text: 'Zum Code-Generator' })])])
@@ -286,7 +287,7 @@
           el('button', { class: 'btn small', onclick: function () { form(a, status); }, text: 'Bearbeiten' })]),
         el('p', { class: 'kv' }, [document.createTextNode('Client-ID: '), code(a.client_id || '–')]),
         el('p', { class: 'kv' }, [document.createTextNode('Berechtigungen: '), document.createTextNode(a.scopes.join(', '))]),
-        el('p', { class: 'kv' }, [document.createTextNode('Weiterleitung: '), document.createTextNode(a.redirect_uris.join(', '))])]));
+        el('p', { class: 'kv' }, [document.createTextNode('Weiterleitung: '), document.createTextNode(a.redirect_uris.join(', '))]), statsBlock(a)]));
     });
     mount(nodes);
   }
@@ -311,17 +312,10 @@
 
     function drawPreview() {
       preview.textContent = '';
-      var lu = logoData ? logoData.url : httpsUrl(app.logo_url), nm = f.name.value || 'Deine App';
+      var lu = logoData ? logoData.url : httpsUrl(app.logo_url);
       var chosen = scopeBoxes.filter(function (b) { return b.checked; });
       preview.appendChild(el('p', { class: 'hand muted center', text: 'Vorschau Zustimmungsseite' }));
-      preview.appendChild(el('div', { class: 'card' }, [
-        el('div', { class: 'pair' }, [lu ? el('img', { class: 'logo', src: lu, alt: '' }) : el('div', { class: 'logo', text: nm[0].toUpperCase() }), el('span', { class: 'arrow', text: '→' }), el('img', { class: 'logo', src: 'icon-192.png', alt: '' })]),
-        el('h2', { class: 'center', text: kkT('{name} möchte auf dein Karteikasten-Konto zugreifen', { name: nm }) }),
-        f.description.value ? el('p', { class: 'center muted small', text: f.description.value }) : null,
-        el('div', { class: 'header-rule' }),
-        el('ul', { class: 'scopes' }, chosen.map(function (b) { return el('li', null, [el('input', { type: 'checkbox', checked: true, disabled: true }), el('label', null, [el('b', { text: SCOPES[b.value][0] }), el('span', { class: 'd', text: SCOPES[b.value][1] })])]); })),
-        el('div', { class: 'notice warn', text: 'Diese App wurde nicht von Karteikasten geprüft.' }),
-        el('div', { class: 'btns' }, [el('span', { class: 'btn', text: 'Ablehnen' }), el('span', { class: 'btn primary', text: 'Erlauben' })])]));
+      preview.appendChild(consentCard({ name: f.name.value.trim(), description: f.description.value.trim(), logo: lu, scopes: chosen.map(function (b) { return b.value; }) }));
       kkTranslateTree(preview);
     }
     f.logo.addEventListener('change', function () {
@@ -399,12 +393,147 @@
       el('p', { class: 'muted small' }, [kkT('Fragen zur Lern-App selbst? Dort gibt es einen eigenen Support: '), el('a', { href: CONFIG.MAIN_APP, text: 'Karteikasten' })])]);
   }
 
+
+  /* ---------- Zustimmungsseite (gemeinsam für Formular-Vorschau und Seite #/consent) ---------- */
+  var DANGER = { 'lists.delete': 1 };
+  function scopeLabel(k) { var s = window.KK_SCOPES && window.KK_SCOPES[k]; return s ? [s.t, s.d] : SCOPES[k]; }
+  function consentCard(o) {
+    var nm = o.name || kkT('Deine App');
+    return el('div', { class: 'card' }, [
+      el('div', { class: 'pair' }, [o.logo ? el('img', { class: 'logo', src: o.logo, alt: '' }) : el('div', { class: 'logo', text: nm[0].toUpperCase() }), el('span', { class: 'arrow', text: '→' }), el('img', { class: 'logo', src: 'icon-192.png', alt: '' })]),
+      el('h2', { class: 'center', text: kkT('{name} möchte auf dein Karteikasten-Konto zugreifen', { name: nm }) }),
+      o.description ? el('p', { class: 'center muted small', text: o.description }) : null,
+      el('div', { class: 'header-rule' }),
+      o.scopes.length ? el('ul', { class: 'scopes' }, o.scopes.map(function (k) {
+        var l = scopeLabel(k);
+        return el('li', { class: DANGER[k] ? 'danger' : null }, [
+          el('input', { type: 'checkbox', id: 'cp_' + k, checked: true, disabled: !o.interactive }),
+          el('label', { for: 'cp_' + k }, [el('b', { text: kkT(l[0]) }), el('span', { class: 'd', text: kkT(l[1]) })])]);
+      })) : el('div', { class: 'notice warn', text: kkT('Keine Berechtigung ausgewählt.') }),
+      el('div', { class: 'notice warn', text: kkT('Diese App wurde nicht von Karteikasten geprüft.') }),
+      el('div', { class: 'btns' }, [el('span', { class: 'btn', text: kkT('Ablehnen') }), el('span', { class: 'btn primary', text: kkT('Erlauben') })])]);
+  }
+
+  function pageConsent() {
+    var name = el('input', { type: 'text', id: 'c_name', maxlength: 60, placeholder: 'Deine App' });
+    var desc = el('textarea', { id: 'c_desc', maxlength: 300, rows: 2 });
+    var picker = el('select', { id: 'c_app' }, [el('option', { value: '', text: kkT('– keine –') })]);
+    var logo = null, apps = [];
+    var boxes = Object.keys(SCOPES).map(function (k) { return el('input', { type: 'checkbox', id: 'cs_' + k, value: k, checked: k === 'profile.read' || k === 'lists.read' }); });
+    var prev = el('div', { class: 'preview', 'aria-live': 'polite' });
+    function draw() {
+      prev.textContent = '';
+      prev.appendChild(el('p', { class: 'hand muted center', text: kkT('Vorschau Zustimmungsseite') }));
+      prev.appendChild(consentCard({ name: name.value.trim(), description: desc.value.trim(), logo: logo, interactive: true,
+        scopes: boxes.filter(function (b) { return b.checked; }).map(function (b) { return b.value; }) }));
+    }
+    [name, desc].forEach(function (i) { i.addEventListener('input', draw); });
+    boxes.forEach(function (b) { b.addEventListener('change', draw); });
+    picker.addEventListener('change', function () {
+      var a = apps.filter(function (x) { return String(x.id) === picker.value; })[0];
+      if (!a) { logo = null; name.value = ''; desc.value = ''; } else {
+        logo = httpsUrl(a.logo_url); name.value = a.name || ''; desc.value = a.description || '';
+        boxes.forEach(function (b) { b.checked = (a.scopes || []).indexOf(b.value) >= 0; });
+      }
+      draw();
+    });
+    var pickRow = el('div', { hidden: true }, [field('Eigene App laden (optional)', picker, 'c_app')]);
+    mount([el('h1', { text: 'Consent-Vorschau' }),
+      el('p', { class: 'muted', text: 'So sieht die Zustimmungsseite für die gewählten Berechtigungen aus. Nutzer können einzelne Berechtigungen abwählen. Probiere es in der Vorschau aus.' }),
+      el('section', { class: 'card' }, [pickRow, field('App-Name', name, 'c_name'), field('Beschreibung', desc, 'c_desc'),
+        el('fieldset', { class: 'plain' }, [el('legend', { class: 'hand', text: 'Berechtigungen' })].concat(Object.keys(SCOPES).map(function (k, i) {
+          var l = scopeLabel(k);
+          return el('label', { class: 'chk', for: 'cs_' + k }, [boxes[i], el('span', null, [el('b', { text: kkT(l[0]) }), ' ', code(k)])]);
+        }))),
+        el('p', { class: 'hint', text: 'Sensible Berechtigungen wie „Listen löschen“ werden auf der Zustimmungsseite hervorgehoben.' })]),
+      prev]);
+    draw();
+    if (getSession()) call(APPS_API, '/apps').then(function (r) {
+      apps = r.data || []; if (!apps.length) return;
+      apps.forEach(function (a) { picker.appendChild(el('option', { value: a.id, text: a.name })); });
+      pickRow.hidden = false;
+    }).catch(function () { });
+  }
+
+  /* ---------- FAQ und Troubleshooting ---------- */
+  var FAQ = [
+    ['„redirect_uri passt nicht“ beim Anmelden', 'Die redirect_uri muss zeichengenau mit einem unter „Meine Apps“ eingetragenen Eintrag übereinstimmen: Schema (https), Host, Port, Pfad und abschließender Schrägstrich. Platzhalter gibt es nicht. Trage jede Variante (z. B. mit und ohne www, lokale Tests) einzeln ein, speichere die App und sende im Authorize- und im Token-Request exakt denselben Wert.', 'redirect_uri=https://deine-app.example/callback'],
+    ['PKCE fehlt oder „invalid code_verifier“', 'PKCE ist Pflicht, auch für vertrauliche Clients. Sende beim Authorize code_challenge und code_challenge_method=S256 und beim Token-Request den passenden code_verifier (43 bis 128 Zeichen). Erzeuge den Verifier bei jeder Anmeldung neu und speichere ihn bis zum Callback (z. B. in sessionStorage), sonst passt er nach der Weiterleitung nicht mehr. Der Code-Generator liefert funktionierenden Code.', 'code_challenge=BASE64URL(SHA256(code_verifier))\ncode_challenge_method=S256'],
+    ['403 nach Widerruf oder bei einzelnen Endpunkten', 'Die API antwortet mit 403, wenn der Nutzer den Zugriff unter „Verbundene Apps“ widerrufen oder eine Berechtigung auf der Zustimmungsseite abgewählt hat, oder wenn dein Aufruf einen Scope braucht, den die App nicht hat. Prüfe zuerst die deklarierten Scopes. Behandle 403 so: gespeicherte Tokens löschen und den Nutzer erneut anmelden lassen, damit er die Berechtigung neu erteilen kann.', 'if (res.status === 403) { clearTokens(); startLogin(); }'],
+    ['Refresh-Token abgelaufen oder „invalid_grant“', 'Ein Refresh-Token wird ungültig, wenn es abgelaufen ist, bereits verwendet wurde, die Sitzung beendet oder der Zugriff widerrufen wurde. Speichere nach jedem Refresh das neue Token-Paar und verwirf das alte. Starte keine parallelen Refreshes (z. B. aus mehreren Tabs). Bei invalid_grant hilft nur eine neue Anmeldung.', 'grant_type=refresh_token&refresh_token=...&client_id=DEINE_CLIENT_ID'],
+    ['401 „Token ungültig“ bei API-Aufrufen', 'Das Access-Token ist abgelaufen oder fehlerhaft. Sende es im Header Authorization: Bearer … ohne Anführungszeichen, erneuere es vorher über das Refresh-Token und verwende nur Tokens, die deine eigene App erhalten hat.', 'Authorization: Bearer ACCESS_TOKEN'],
+    ['429 Rate-Limit', 'Erlaubt sind 120 Anfragen pro Minute je Nutzer und App. Fasse Änderungen zusammen (POST /lists/{id}/vocab nimmt bis zu 500 Einträge auf), cache Antworten und warte bei 429 mit steigenden Pausen, bevor du es erneut versuchst.'],
+    ['409 bei gleichzeitigen Änderungen', 'Zwei Änderungen an derselben Liste liefen gleichzeitig. Wiederhole die Anfrage nach kurzer Pause und sende Schreibzugriffe auf eine Liste nacheinander statt parallel.'],
+    ['Ich kann keine App anlegen oder ändern', 'Dafür muss die Zwei-Faktor-Authentifizierung in Karteikasten aktiviert sein (Einstellungen → Konto). Außerdem gilt ein Limit an Apps je Konto. Das Logo darf höchstens 256 KB groß sein (PNG, JPG oder WebP).'],
+    ['Die Zustimmungsseite zeigt „nicht geprüft“', 'Der Hinweis erscheint für Apps aus dem Developer-Bereich, wie du in der Consent-Vorschau siehst. Nutzer können trotzdem zustimmen. Fordere nur die Berechtigungen an, die du wirklich brauchst, das schafft Vertrauen.']
+  ];
+  function pageFaq() {
+    var q = el('input', { type: 'search', id: 'faq_q', placeholder: kkT('Fragen durchsuchen …'), 'aria-label': kkT('Fragen durchsuchen …') });
+    var list = el('div'), empty = el('p', { class: 'muted', hidden: true, text: kkT('Keine passenden Einträge gefunden.') });
+    var items = FAQ.map(function (f) {
+      var qt = kkT(f[0]), at = kkT(f[1]);
+      return { t: (qt + ' ' + at).toLowerCase(), d: el('details', { class: 'faq' }, [el('summary', { text: qt }), el('p', { text: at }), f[2] ? pre(f[2]) : null]) };
+    });
+    items.forEach(function (i) { list.appendChild(i.d); });
+    q.addEventListener('input', function () {
+      var v = q.value.trim().toLowerCase(), n = 0;
+      items.forEach(function (i) { var show = !v || i.t.indexOf(v) >= 0; i.d.hidden = !show; if (show) n++; });
+      empty.hidden = n > 0;
+    });
+    mount([el('h1', { text: 'FAQ und Troubleshooting' }), el('p', { class: 'muted', text: 'Typische Probleme bei der Anbindung und wie du sie löst.' }),
+      el('section', { class: 'card' }, [q, list, empty]),
+      el('p', { class: 'muted small' }, [kkT('Noch nicht gelöst?') + ' ', el('a', { href: '#/support', text: kkT('Schreib uns über den Support.') })])]);
+  }
+
+  /* ---------- Statistiken je App (Endpunkt: GET dev-apps/apps/{id}/stats?days=N) ---------- */
+  function nf(n, o) { try { return new Intl.NumberFormat(kkLocale(), o).format(n); } catch (e) { return String(n); } }
+  function statsChart(daily) {
+    var NS = 'http://www.w3.org/2000/svg', n = daily.length;
+    var max = Math.max.apply(null, daily.map(function (d) { return d.requests || 0; })) || 1;
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 ' + n * 10 + ' 50'); svg.setAttribute('preserveAspectRatio', 'none'); svg.setAttribute('class', 'spark');
+    svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', kkT('Anfragen pro Tag, Fehler hervorgehoben'));
+    function rect(x, y, h, c) { var r = document.createElementNS(NS, 'rect'); r.setAttribute('x', x); r.setAttribute('y', y); r.setAttribute('width', 8); r.setAttribute('height', h); r.setAttribute('class', c); return r; }
+    daily.forEach(function (d, i) {
+      var h = (d.requests || 0) / max * 48, eh = Math.min(h, (d.errors || 0) / max * 48);
+      var g = document.createElementNS(NS, 'g'), t = document.createElementNS(NS, 'title');
+      t.textContent = d.day + ': ' + nf(d.requests || 0) + ' / ' + nf(d.errors || 0); g.appendChild(t);
+      if (h - eh > 0) g.appendChild(rect(i * 10 + 1, 50 - h, h - eh, 'ok'));
+      if (eh > 0) g.appendChild(rect(i * 10 + 1, 50 - eh, eh, 'er'));
+      svg.appendChild(g);
+    });
+    return svg;
+  }
+  function statsBlock(a) {
+    var days = 30, body = el('div');
+    var sel = el('select', { class: 'langsel', 'aria-label': kkT('Zeitraum') }, [[7, 'Letzte 7 Tage'], [30, 'Letzte 30 Tage'], [90, 'Letzte 90 Tage']].map(function (o) {
+      return el('option', { value: o[0], text: kkT(o[1]), selected: o[0] === 30 }); }));
+    function tile(l, v) { return el('div', { class: 'tile' }, [el('b', { text: v }), el('span', { text: l })]); }
+    function msg(t) { body.textContent = ''; body.appendChild(el('p', { class: 'muted small', text: kkT(t) })); }
+    function draw(s) {
+      var req = +s.requests || 0, err = +s.errors || 0, daily = s.daily || [];
+      body.textContent = '';
+      body.appendChild(el('div', { class: 'tiles' }, [tile(kkT('Aktive Nutzer'), nf(+s.users || 0)),
+        tile(kkT('Anfragen pro Tag (Ø)'), nf(req / days, { maximumFractionDigits: 1 })),
+        tile(kkT('Fehlerquote'), req ? nf(err / req, { style: 'percent', maximumFractionDigits: 1 }) : '–')]));
+      if (req && daily.length) body.appendChild(statsChart(daily)); else body.appendChild(el('p', { class: 'muted small', text: kkT('Noch keine Anfragen in diesem Zeitraum.') }));
+      body.appendChild(el('p', { class: 'hint', text: kkT('Fehler sind Antworten mit Status 400 oder höher. Gespeichert werden nur Zähler, keine Inhalte.') }));
+    }
+    function load() {
+      msg('Statistiken werden geladen …');
+      call(APPS_API, '/apps/' + a.id + '/stats?days=' + days).then(draw).catch(function () { msg('Statistiken sind für diese App noch nicht verfügbar.'); });
+    }
+    sel.addEventListener('change', function () { days = +sel.value || 30; load(); });
+    load();
+    return el('div', { class: 'stats' }, [el('div', { class: 'shead' }, [el('h3', { text: 'Statistiken' }), sel]), body]);
+  }
+
   /* ---------- Routing ---------- */
   function route() {
     var r = (location.hash || '#/').replace(/^#\/?/, '').split('/')[0] || 'home';
-    markNav(r === 'docs' || r === 'apps' || r === 'test' || r === 'code' || r === 'support' ? r : 'home'); renderUser();
-    document.title = kkT(r === 'docs' ? 'Dokumentation – Karteikasten Developer' : r === 'apps' ? 'Meine Apps – Karteikasten Developer' : r === 'test' ? 'Test-App – Karteikasten Developer' : r === 'code' ? 'Code-Generator – Karteikasten Developer' : r === 'support' ? 'Support – Karteikasten Developer' : 'Karteikasten Developer');
-    if (r === 'docs') pageDocs(); else if (r === 'apps') pageApps(); else if (r === 'test') pageTest(); else if (r === 'code') pageCode(); else if (r === 'support') pageSupport(); else pageHome();
+    markNav(r === 'docs' || r === 'apps' || r === 'test' || r === 'code' || r === 'support' || r === 'faq' || r === 'consent' ? r : 'home'); renderUser();
+    document.title = kkT(r === 'docs' ? 'Dokumentation – Karteikasten Developer' : r === 'apps' ? 'Meine Apps – Karteikasten Developer' : r === 'test' ? 'Test-App – Karteikasten Developer' : r === 'code' ? 'Code-Generator – Karteikasten Developer' : r === 'support' ? 'Support – Karteikasten Developer' : r === 'faq' ? 'FAQ – Karteikasten Developer' : r === 'consent' ? 'Consent-Vorschau – Karteikasten Developer' : 'Karteikasten Developer');
+    if (r === 'docs') pageDocs(); else if (r === 'apps') pageApps(); else if (r === 'test') pageTest(); else if (r === 'code') pageCode(); else if (r === 'support') pageSupport(); else if (r === 'faq') pageFaq(); else if (r === 'consent') pageConsent(); else pageHome();
   }
   document.querySelector('.top .in').appendChild(kkLangSelect());
   window.addEventListener('hashchange', route);
