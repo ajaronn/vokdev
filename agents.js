@@ -32,7 +32,8 @@
     opt: { auto: ['Automatisch', 'Automatic', 'Automático'], light: ['Hell', 'Light', 'Claro'], dark: ['Dunkel', 'Dark', 'Escuro'], right: ['Rechts', 'Right', 'Direita'], left: ['Links', 'Left', 'Esquerda'],
       compact: ['Kompakt', 'Compact', 'Compacto'], large: ['Groß', 'Large', 'Grande'], system: ['System', 'System', 'Sistema'], serif: ['Serif', 'Serif', 'Serifa'], mono: ['Monospace', 'Monospace', 'Monoespaçada'] }
   };
-  var O = function (k) { return t(X.opt[k]); };
+  var LN = { de: 'Deutsch', en: 'English', 'pt-BR': 'Português (BR)' };
+  var O = function (k) { return X.opt[k] ? t(X.opt[k]) : (LN[k] || k); };
   var FIELDS = [
     ['sLook'],
     { k: 'name', g: 'pub', type: 'text', label: ['Name des Agenten', 'Agent name', 'Nome do agente'], def: 'Assistant' },
