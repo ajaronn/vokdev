@@ -1,4 +1,4 @@
-/* Kopfleiste am Handy ein-/ausblenden (Pfeil unten an der Leiste) */
+/* Kopfleiste auf allen Geräten ein-/ausblenden (Pfeil unten an der Leiste) */
 (function () {
   'use strict';
   var top = document.querySelector('header.top');
