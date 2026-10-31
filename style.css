@@ -115,13 +115,10 @@ td,th{overflow-wrap:anywhere}
 }
 
 /* ---- Kopfleiste auf dem Handy ein-/ausblendbar ---- */
-.topfold{display:none}
-@media(max-width:640px){
-  .topfold{display:flex;align-items:center;justify-content:center;width:100%;height:28px;padding:0;margin:0;border:0;border-top:1px solid var(--border);border-radius:0;background:var(--surface);color:var(--muted);font:inherit;font-size:14px;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent}
-  .topfold:active{background:var(--bg)}
-  .top.collapsed .in{display:none}
-  .top.collapsed .topfold{border-top:0}
-}
+.topfold{display:flex;align-items:center;justify-content:center;width:100%;height:28px;padding:0;margin:0;border:0;border-top:1px solid var(--border);border-radius:0;background:var(--surface);color:var(--muted);font:inherit;font-size:14px;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.topfold:hover,.topfold:active{background:var(--bg)}
+.top.collapsed .in{display:none}
+.top.collapsed .topfold{border-top:0}
 
 /* ---- FAQ, Consent-Vorschau, Statistiken ---- */
 [hidden]{display:none!important}
