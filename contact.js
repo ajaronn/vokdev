@@ -28,7 +28,7 @@
     copy: ['Kopieren', 'Copy', 'Copiar'], copied: ['Kopiert!', 'Copied!', 'Copiado!'],
     sMail: ['Empfänger', 'Recipient', 'Destinatário'],
     sSend: ['E-Mail-Versand (dein eigener Dienst)', 'Email sending (your own service)', 'Envio de e-mail (seu próprio serviço)'],
-    hSend: ['Die Nachrichten werden über DEIN Konto bei einem Mail-Dienst verschickt, nicht über unseres. Der Absender (E-Mail-Adresse) muss bei deinem Dienst bestätigt sein. Am einfachsten ist Brevo (Absender-Adresse per Klick bestätigen, keine eigene Domain nötig). Dein Schlüssel wird verschlüsselt gespeichert und nie wieder angezeigt. Beim Speichern schicken wir dir eine Test-E-Mail.', 'Messages are sent through YOUR account at a mail service, not ours. The sender email address must be verified with your service. Brevo is the easiest (verify a sender address with one click, no own domain needed). Your key is stored encrypted and never shown again. When saving, we send you a test email.', 'As mensagens são enviadas pela SUA conta em um serviço de e-mail, não pela nossa. O endereço do remetente precisa estar verificado no seu serviço. O mais fácil é o Brevo (verificar o remetente com um clique, sem domínio próprio). Sua chave é armazenada criptografada e nunca mais exibida. Ao salvar, enviamos um e-mail de teste.'], sPerm: ['Was Besucher dürfen', 'What visitors may do', 'O que os visitantes podem fazer'], sLook: ['Aussehen & Texte', 'Appearance & texts', 'Aparência e textos'], sSec: ['Sicherheit', 'Security', 'Segurança'],
+    hSend: ['Die Nachrichten werden über DEIN Konto bei einem Mail-Dienst verschickt, nicht über unseres. Der Absender (E-Mail-Adresse) muss bei deinem Dienst bestätigt sein. Am einfachsten ist Brevo (Absender-Adresse per Klick bestätigen, keine eigene Domain nötig). Alternativ Gmail: dafür brauchst du ein Google-App-Passwort (Google-Konto → Sicherheit → 2-Schritt-Bestätigung → App-Passwörter). Dein Schlüssel wird verschlüsselt gespeichert und nie wieder angezeigt. Beim Speichern schicken wir dir eine Test-E-Mail.', 'Messages are sent through YOUR account at a mail service, not ours. The sender email address must be verified with your service. Brevo is the easiest (verify a sender address with one click, no own domain needed). Alternatively Gmail: you need a Google app password (Google Account → Security → 2-Step Verification → App passwords). Your key is stored encrypted and never shown again. When saving, we send you a test email.', 'As mensagens são enviadas pela SUA conta em um serviço de e-mail, não pela nossa. O endereço do remetente precisa estar verificado no seu serviço. O mais fácil é o Brevo (verificar o remetente com um clique, sem domínio próprio). Alternativamente o Gmail: você precisa de uma senha de app do Google (Conta Google → Segurança → Verificação em duas etapas → Senhas de app). Sua chave é armazenada criptografada e nunca mais exibida. Ao salvar, enviamos um e-mail de teste.'], sPerm: ['Was Besucher dürfen', 'What visitors may do', 'O que os visitantes podem fazer'], sLook: ['Aussehen & Texte', 'Appearance & texts', 'Aparência e textos'], sSec: ['Sicherheit', 'Security', 'Segurança'],
     eAuth: ['Sitzung abgelaufen. Bitte melde dich neu an.', 'Session expired. Please sign in again.', 'Sessão expirada. Entre novamente.'],
     eMail: ['Bitte gib eine gültige Empfänger-E-Mail an.', 'Please enter a valid recipient email.', 'Informe um e-mail de destino válido.'],
     eMax: ['Maximal 5 Formulare pro Konto.', 'Maximum 5 forms per account.', 'Máximo de 5 formulários por conta.'],
@@ -45,9 +45,9 @@
     { k: 'to_email', g: 'priv', type: 'email', req: 1, label: ['Deine E-Mail-Adresse (hierhin werden die Nachrichten gesendet)', 'Your email address (messages are sent here)', 'Seu e-mail (as mensagens são enviadas para cá)'] },
     { k: 'subject_prefix', g: 'priv', type: 'text', label: ['Betreff-Präfix in deiner E-Mail (optional, z. B. [Webseite])', 'Subject prefix in your email (optional, e.g. [Website])', 'Prefixo do assunto no seu e-mail (opcional, ex.: [Site])'] },
     ['sSend', 'hSend'],
-    { k: 'provider', g: 'priv', type: 'select', label: ['Mail-Dienst', 'Mail service', 'Serviço de e-mail'], opts: ['brevo', 'resend', 'sendgrid'], plain: { brevo: 'Brevo', resend: 'Resend', sendgrid: 'SendGrid' } },
-    { k: 'key', g: 'api', type: 'password', label: ['Dein API-Schlüssel dieses Dienstes', 'Your API key for this service', 'Sua chave de API deste serviço'] },
-    { k: 'from_email', g: 'priv', type: 'email', label: ['Absender-E-Mail (bei deinem Dienst bestätigt)', 'Sender email (verified with your service)', 'E-mail do remetente (verificado no seu serviço)'] },
+    { k: 'provider', g: 'priv', type: 'select', label: ['Mail-Dienst', 'Mail service', 'Serviço de e-mail'], opts: ['brevo', 'resend', 'sendgrid', 'gmail'], plain: { brevo: 'Brevo', resend: 'Resend', sendgrid: 'SendGrid', gmail: 'Gmail (App-Passwort)' } },
+    { k: 'key', g: 'api', type: 'password', label: ['Dein API-Schlüssel bzw. bei Gmail dein App-Passwort', 'Your API key, or your app password for Gmail', 'Sua chave de API ou, no Gmail, sua senha de app'] },
+    { k: 'from_email', g: 'priv', type: 'email', label: ['Absender-E-Mail (bei Gmail: deine Gmail-Adresse; sonst bei deinem Dienst bestätigt)', 'Sender email (for Gmail: your Gmail address; otherwise verified with your service)', 'E-mail do remetente (no Gmail: seu endereço Gmail; senão, verificado no seu serviço)'] },
     { k: 'from_name', g: 'priv', type: 'text', label: ['Absender-Name (optional)', 'Sender name (optional)', 'Nome do remetente (opcional)'] },
     ['sPerm'],
     { k: 'ask_name', g: 'pub', type: 'select', label: ['Name des Besuchers', 'Visitor’s name', 'Nome do visitante'], opts: ['optional', 'required', 'off'] },
@@ -89,7 +89,7 @@
   function mount(nodes) { view.textContent = ''; nodes.forEach(function (n) { view.appendChild(n); }); window.scrollTo(0, 0); }
   function msg(text, err) { var m = h('div', { class: 'msg' + (err ? ' err' : ''), role: 'status', text: text }); view.insertBefore(m, view.firstChild); window.scrollTo(0, 0); setTimeout(function () { m.remove(); }, 7000); }
   function loginView() {
-    mount([h('h1', { text: t(X.title) }), h('p', { text: t(X.login) }), h('a', { class: 'btn', href: 'index.html#/apps', text: t(X.loginBtn), style: 'display:inline-block;padding:10px 16px;border-radius:8px;background:var(--rust);color:var(--rust-contrast);text-decoration:none;font-weight:600' })]);
+    mount([h('h1', { text: t(X.title) }), h('p', { text: t(X.login) }), h('a', { class: 'btn', href: 'index.html#/apps', text: t(X.loginBtn), style: 'display:inline-block;padding:10px 16px;border-radius:8px;background:var(--rust);color:var(--rust-contrast);text-decoration:none;font-weight:600' }), guide(true)]);
   }
   function fail(e) {
     if (e && e.auth) return loginView();
@@ -106,7 +106,7 @@
           h('button', { class: 'b', type: 'button', text: t(X.edit), onclick: function () { form(a); } }),
           h('button', { class: 'b s', type: 'button', text: t(X.del), onclick: function () { if (confirm(t(X.delQ))) call({ action: 'delete', id: a.id }).then(list).catch(fail); } })])]);
       });
-      mount([h('h1', { text: t(X.title) }), h('p', { class: 'muted', text: t(X.intro) }), h('h2', { text: t(X.mine) })]
+      mount([h('h1', { text: t(X.title) }), h('p', { class: 'muted', text: t(X.intro) }), guide(true), h('h2', { text: t(X.mine) })]
         .concat(cards.length ? cards : [h('p', { class: 'muted', text: t(X.none) })])
         .concat([h('div', { class: 'row' }, [h('button', { class: 'b', type: 'button', text: '+ ' + t(X.newA), onclick: function () { form(null); } })])]));
     }).catch(fail);
@@ -121,6 +121,7 @@
       return f.def != null ? f.def : '';
     };
     var nodes = [h('p', null, [h('a', { href: '#', text: '← ' + t(X.back), onclick: function (e) { e.preventDefault(); list(); } })]), h('h1', { text: a ? (a.pub.title || a.priv.to_email) : t(X.newA) })];
+    nodes.push(guide(false));
     FIELDS.forEach(function (f) {
       if (Array.isArray(f)) { nodes.push(h('h2', { text: t(X[f[0]]) })); if (f[1]) nodes.push(h('p', { class: 'muted small', text: t(X[f[1]]) })); return; }
       var lb = h('label', { text: t(f.label), for: 'f_' + f.k }), el, v = val(f);
@@ -155,6 +156,58 @@
     if (a) embed(a.id);
     mount(nodes);
     if (a) window.KKContact.mount({ id: a.id, cfg: a.pub, open: false });
+  }
+
+
+  /* ---------- Anleitung (für Devs sichtbar) ---------- */
+  X.guideTitle = ['Anleitung', 'Guide', 'Guia'];
+  var G = [
+    { open: 1, title: ['So funktioniert es (3 Schritte)', 'How it works (3 steps)', 'Como funciona (3 passos)'], steps: [
+      ['Formular anlegen: Trag deine E-Mail-Adresse ein, wähle deinen Mail-Dienst und lege fest, was Besucher dürfen (z. B. Anhänge).', 'Create a form: enter your email address, choose your mail service and decide what visitors may do (e.g. attachments).', 'Criar o formulário: informe seu e-mail, escolha seu serviço de e-mail e defina o que os visitantes podem fazer (ex.: anexos).'],
+      ['Auf „Speichern & testen“ tippen. Du bekommst eine Test-E-Mail. Kommt sie an, ist alles richtig. Bei einem Fehler siehst du den Grund und es wird nichts gespeichert.', 'Tap “Save & test”. You will receive a test email. If it arrives, everything is correct. If there is an error you will see the reason and nothing is saved.', 'Toque em “Salvar e testar”. Você recebe um e-mail de teste. Se chegar, está tudo certo. Em caso de erro, você vê o motivo e nada é salvo.'],
+      ['Den angezeigten Code („Dein Code für die Webseite“) kopieren und kurz vor </body> deiner Webseite einfügen. Fertig: Nachrichten von Besuchern kommen per E-Mail bei dir an, und „Antworten“ geht direkt an den Besucher.', 'Copy the code shown (“Your code for the website”) and paste it just before </body> on your website. Done: visitors’ messages arrive by email, and “Reply” goes straight to the visitor.', 'Copie o código exibido (“Seu código para o site”) e cole logo antes de </body> no seu site. Pronto: as mensagens dos visitantes chegam por e-mail e “Responder” vai direto ao visitante.']
+    ] },
+    { title: ['Mail-Dienst einrichten: Brevo (am einfachsten)', 'Set up your mail service: Brevo (easiest)', 'Configurar o serviço de e-mail: Brevo (mais fácil)'], steps: [
+      ['Kostenloses Konto auf brevo.com anlegen.', 'Create a free account at brevo.com.', 'Criar uma conta gratuita em brevo.com.'],
+      ['Absender bestätigen: Senders, Domains & dedicated IPs → Senders → Add a sender. Name und E-Mail eintragen, den Bestätigungslink in der Mail anklicken.', 'Verify a sender: Senders, Domains & dedicated IPs → Senders → Add a sender. Enter name and email, click the confirmation link in the email.', 'Verificar o remetente: Senders, Domains & dedicated IPs → Senders → Add a sender. Informe nome e e-mail e clique no link de confirmação.'],
+      ['API-Schlüssel: SMTP & API → API Keys → Generate a new API key. Kopieren (wird nur einmal angezeigt).', 'API key: SMTP & API → API Keys → Generate a new API key. Copy it (shown only once).', 'Chave de API: SMTP & API → API Keys → Generate a new API key. Copie (exibida só uma vez).'],
+      ['Hier: Dienst „Brevo“ wählen, Schlüssel einfügen, als Absender-E-Mail genau die bestätigte Adresse eintragen.', 'Here: choose “Brevo”, paste the key, and enter exactly the verified address as sender email.', 'Aqui: escolha “Brevo”, cole a chave e informe exatamente o endereço verificado como e-mail do remetente.']
+    ] },
+    { title: ['Mail-Dienst einrichten: Gmail (App-Passwort)', 'Set up your mail service: Gmail (app password)', 'Configurar o serviço de e-mail: Gmail (senha de app)'], steps: [
+      ['Im Google-Konto die 2-Schritt-Bestätigung aktivieren (myaccount.google.com → Sicherheit). Ohne sie gibt es keine App-Passwörter.', 'Turn on 2-Step Verification in your Google Account (myaccount.google.com → Security). Without it there are no app passwords.', 'Ative a verificação em duas etapas na conta Google (myaccount.google.com → Segurança). Sem ela não há senhas de app.'],
+      ['myaccount.google.com/apppasswords öffnen, einen Namen eingeben (z. B. „Kontaktformular“), auf „Erstellen“ tippen. Das 16-stellige Passwort kopieren (wird nur einmal angezeigt, Leerzeichen sind egal).', 'Open myaccount.google.com/apppasswords, enter a name (e.g. “Contact form”), tap “Create”. Copy the 16-character password (shown only once, spaces don’t matter).', 'Abra myaccount.google.com/apppasswords, informe um nome (ex.: “Formulário de contato”) e toque em “Criar”. Copie a senha de 16 caracteres (exibida só uma vez, espaços não importam).'],
+      ['Hier: Dienst „Gmail (App-Passwort)“ wählen, das App-Passwort als Schlüssel einfügen und als Absender-E-Mail deine Gmail-Adresse eintragen (die, zu der das App-Passwort gehört). Das normale Google-Passwort funktioniert nicht.', 'Here: choose “Gmail (App-Passwort)”, paste the app password as the key and enter your Gmail address as sender email (the one the app password belongs to). Your normal Google password will not work.', 'Aqui: escolha “Gmail (App-Passwort)”, cole a senha de app como chave e informe seu endereço Gmail como remetente (o da senha de app). A senha normal do Google não funciona.'],
+      ['Tipp: Am besten ein eigenes Gmail-Konto nur für das Formular nutzen. Ein App-Passwort erlaubt das Senden im Namen des Kontos; bei Missbrauch kannst du es auf der App-Passwörter-Seite löschen.', 'Tip: ideally use a separate Gmail account just for the form. An app password allows sending on behalf of the account; if it is misused you can delete it on the app passwords page.', 'Dica: o ideal é usar uma conta Gmail só para o formulário. Uma senha de app permite enviar em nome da conta; em caso de abuso, exclua-a na página de senhas de app.']
+    ] },
+    { title: ['Mail-Dienst einrichten: Resend', 'Set up your mail service: Resend', 'Configurar o serviço de e-mail: Resend'], steps: [
+      ['Konto auf resend.com anlegen, unter API Keys einen Schlüssel mit „Sending access“ erzeugen.', 'Create an account at resend.com and create a key with “Sending access” under API Keys.', 'Crie uma conta em resend.com e gere uma chave com “Sending access” em API Keys.'],
+      ['Eigene Domain unter Domains hinzufügen, die DNS-Einträge bei deinem Domain-Anbieter setzen und „Verify“ klicken. Absender z. B. kontakt@deine-domain.de.', 'Add your own domain under Domains, set the DNS records at your domain provider and click “Verify”. Sender e.g. contact@your-domain.com.', 'Adicione seu domínio em Domains, configure os registros DNS no seu provedor e clique em “Verify”. Remetente, ex.: contato@seu-dominio.com.'],
+      ['Ohne eigene Domain geht nur der Testbetrieb (Absender onboarding@resend.dev, Versand nur an die Adresse deines Resend-Kontos).', 'Without your own domain only test mode works (sender onboarding@resend.dev, sending only to your Resend account’s address).', 'Sem domínio próprio só funciona o modo de teste (remetente onboarding@resend.dev, envio apenas para o endereço da sua conta Resend).']
+    ] },
+    { title: ['Mail-Dienst einrichten: SendGrid', 'Set up your mail service: SendGrid', 'Configurar o serviço de e-mail: SendGrid'], steps: [
+      ['Konto auf sendgrid.com anlegen.', 'Create an account at sendgrid.com.', 'Crie uma conta em sendgrid.com.'],
+      ['Absender bestätigen: Settings → Sender Authentication → Single Sender Verification, Bestätigungslink anklicken.', 'Verify a sender: Settings → Sender Authentication → Single Sender Verification, click the confirmation link.', 'Verificar o remetente: Settings → Sender Authentication → Single Sender Verification e clique no link de confirmação.'],
+      ['Schlüssel: Settings → API Keys → Create API Key mit der Berechtigung „Mail Send“. Hier einfügen und die bestätigte Adresse als Absender eintragen.', 'Key: Settings → API Keys → Create API Key with “Mail Send” permission. Paste it here and enter the verified address as sender.', 'Chave: Settings → API Keys → Create API Key com permissão “Mail Send”. Cole aqui e informe o endereço verificado como remetente.']
+    ] },
+    { title: ['Code in die Webseite einfügen', 'Adding the code to your website', 'Adicionar o código ao site'], steps: [
+      ['Den Code kurz vor </body> in den HTML-Code deiner Seite einfügen. Bei Baukästen (Wix, Jimdo, WordPress usw.) gibt es dafür meist einen Bereich „Eigener Code“ bzw. „Custom Code“ im Seitenende (Footer).', 'Paste the code just before </body> in your page’s HTML. Website builders (Wix, Jimdo, WordPress etc.) usually have a “Custom code” area in the page footer.', 'Cole o código logo antes de </body> no HTML da página. Construtores de sites (Wix, Jimdo, WordPress etc.) geralmente têm uma área “Código personalizado” no rodapé.'],
+      ['Änderungen, die du hier später speicherst, gelten sofort. Der Code auf deiner Webseite muss dafür nicht geändert werden.', 'Changes you save here later apply immediately. You do not have to change the code on your website.', 'Alterações salvas aqui depois valem imediatamente. Você não precisa mudar o código no seu site.'],
+      ['Zusätzlich möglich: data-open="true" im Code (Fenster startet geöffnet) oder data-lang="de" (Sprache fest). Mit „Erlaubte Domains“ legst du fest, auf welchen Webseiten das Formular funktioniert.', 'Optional: data-open="true" in the code (window starts open) or data-lang="en" (fixed language). With “Allowed domains” you decide on which websites the form works.', 'Opcional: data-open="true" no código (janela inicia aberta) ou data-lang="pt-BR" (idioma fixo). Em “Domínios permitidos” você define em quais sites o formulário funciona.']
+    ] },
+    { title: ['Probleme?', 'Problems?', 'Problemas?'], steps: [
+      ['Test-E-Mail kommt nicht an: Die Fehlermeldung beim Speichern nennt den Grund. Meist stimmt der Schlüssel nicht oder die Absender-Adresse ist beim Dienst nicht bestätigt. Auch den Spam-Ordner prüfen.', 'Test email does not arrive: the error message when saving gives the reason. Usually the key is wrong or the sender address is not verified with the service. Also check your spam folder.', 'O e-mail de teste não chega: a mensagem de erro ao salvar mostra o motivo. Geralmente a chave está errada ou o remetente não está verificado no serviço. Verifique também o spam.'],
+      ['Fenster erscheint nicht: Prüfe, ob der Code vor </body> steht und ob deine Webseite unter „Erlaubte Domains“ eingetragen ist (oder das Feld leer ist).', 'Window does not appear: check that the code is before </body> and that your website is listed under “Allowed domains” (or the field is empty).', 'A janela não aparece: verifique se o código está antes de </body> e se seu site está em “Domínios permitidos” (ou o campo está vazio).'],
+      ['Schlüssel ändern: Neuen Schlüssel eintragen und speichern. Lässt du das Feld leer, bleibt der gespeicherte Schlüssel erhalten.', 'Changing the key: enter a new key and save. If you leave the field empty, the stored key is kept.', 'Trocar a chave: informe uma nova chave e salve. Se deixar o campo vazio, a chave salva é mantida.']
+    ] }
+  ];
+  function guide(openFirst) {
+    var box = h('div', null, [h('h2', { text: t(X.guideTitle) })]);
+    G.forEach(function (g) {
+      var d = h('details', { open: openFirst && g.open ? true : null }, [h('summary', { text: t(g.title) })]);
+      var ol = h('ol'); g.steps.forEach(function (s) { ol.appendChild(h('li', { text: t(s) })); });
+      d.appendChild(ol); box.appendChild(d);
+    });
+    return box;
   }
 
   var s = session();
