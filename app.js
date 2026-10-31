@@ -530,9 +530,16 @@
 
   /* ---------- Routing ---------- */
   function route() {
-    var r = (location.hash || '#/').replace(/^#\/?/, '').split('/')[0] || 'home';
-    markNav(r === 'docs' || r === 'apps' || r === 'test' || r === 'code' || r === 'support' || r === 'faq' || r === 'consent' ? r : 'home'); renderUser();
-    document.title = kkT(r === 'docs' ? 'Dokumentation – Karteikasten Developer' : r === 'apps' ? 'Meine Apps – Karteikasten Developer' : r === 'test' ? 'Test-App – Karteikasten Developer' : r === 'code' ? 'Code-Generator – Karteikasten Developer' : r === 'support' ? 'Support – Karteikasten Developer' : r === 'faq' ? 'FAQ – Karteikasten Developer' : r === 'consent' ? 'Consent-Vorschau – Karteikasten Developer' : 'Karteikasten Developer');
+    var r = (location.hash || '#/').replace(/^#\/?/, '').split('/')[0].split('?')[0] || 'home';
+    markNav(r === 'docs' || r === 'apps' || r === 'test' || r === 'code' || r === 'support' || r === 'faq' || r === 'consent' || r === 'teams' ? r : 'home'); renderUser();
+    document.title = kkT(r === 'teams' ? 'Teams – Karteikasten Developer' : r === 'docs' ? 'Dokumentation – Karteikasten Developer' : r === 'apps' ? 'Meine Apps – Karteikasten Developer' : r === 'test' ? 'Test-App – Karteikasten Developer' : r === 'code' ? 'Code-Generator – Karteikasten Developer' : r === 'support' ? 'Support – Karteikasten Developer' : r === 'faq' ? 'FAQ – Karteikasten Developer' : r === 'consent' ? 'Consent-Vorschau – Karteikasten Developer' : 'Karteikasten Developer');
+    if (r === 'teams' && window.kkTeams) {
+      var ses = getSession();
+      window.kkTeams.render({ view: view, el: el, toast: toast, getSession: getSession,
+        myId: ses ? jwt(ses.access_token).sub : null,
+        call: function (p, o) { return call(APPS_API, p, o); } });
+      return;
+    }
     if (r === 'docs') pageDocs(); else if (r === 'apps') pageApps(); else if (r === 'test') pageTest(); else if (r === 'code') pageCode(); else if (r === 'support') pageSupport(); else if (r === 'faq') pageFaq(); else if (r === 'consent') pageConsent(); else pageHome();
   }
   document.querySelector('.top .in').appendChild(kkLangSelect());
