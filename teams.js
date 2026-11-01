@@ -78,6 +78,20 @@
         var kids = [];
         if (p.description) kids.push(el('p', { class: 'tm-note', text: p.description }));
         if (!(isViewer && cv === 'none')) kids.push(row([btn('💬 Chat', function () { openChat('project:' + p.id, team.name + ' / ' + p.name, isOwner, !(isViewer && cv === 'read')); }, 'primary')]));
+        var canMake = !isViewer;
+        var ak = apps.filter(function (x) { return x.project_id === p.id; }).map(function (x) {
+          var lv = x.release_status === 'live';
+          return person(who(x.name, null, badge(kkT(lv ? 'Live' : 'Test-Modus'), lv ? 'live' : 'test')), canMake ? [el('a', { class: 'btn small', href: '#/apps?edit=' + x.id, text: 'Bearbeiten' })] : []);
+        });
+        if (!ak.length) ak.push(el('p', { class: 'tm-note', text: 'Noch keine Apps in diesem Projekt.' }));
+        if (canMake) ak.push(row([el('a', { class: 'btn small primary', href: '#/apps?project=' + p.id, text: '+ Neue App' })]));
+        kids.push(sec('Apps im Projekt', ak));
+        var fk = (p.forms || []).map(function (f) {
+          return person(who(f.title), canMake ? [el('a', { class: 'btn small', href: 'contact.html?edit=' + f.id, text: 'Bearbeiten' })] : []);
+        });
+        if (!fk.length) fk.push(el('p', { class: 'tm-note', text: 'Noch keine Formulare in diesem Projekt.' }));
+        if (canMake) fk.push(row([el('a', { class: 'btn small primary', href: 'contact.html?project=' + p.id, text: '+ Neues Formular' })]));
+        kids.push(sec('Kontaktformulare im Projekt', fk));
         var people = team.members.map(function (mem) {
           var pm = p.members.filter(function (x) { return x.user_id === mem.user_id; })[0];
           var isTO = mem.role === 'owner';
