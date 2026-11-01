@@ -23,7 +23,7 @@
   window.kkTeams = {
     render: function (ctx) {
       var el = ctx.el, view = ctx.view, call = ctx.call, toast = ctx.toast;
-      var teams = [], apps = [], openHist = {}, histData = {}, testData = {};
+      var teams = [], apps = [], openHist = {}, histData = {}, testData = {}, prefs = {}, chat = null;
 
       function fail(e) { toast('err', e.message); }
       function act(p, o) { return call(p, o).then(load).catch(fail); }
@@ -49,16 +49,31 @@
             act('/projects/' + p.id + '/members/' + mem.user_id, v === 'none' ? { method: 'DELETE' } : { method: 'PUT', body: { role: v } });
           })]));
         });
+        var cv = p.chat_viewers || 'write', isViewer = p.my_role === 'viewer';
+        if (!(isViewer && cv === 'none')) kids.push(btn('💬 Chat', function () { openChat('project:' + p.id, team.name + ' / ' + p.name, isOwner, !(isViewer && cv === 'read')); }));
+        if (isOwner) {
+          var cs = el('select', { 'aria-label': 'Chat für Personen mit „Nur ansehen“' });
+          [['write', 'Schreiben und lesen'], ['read', 'Nur lesen'], ['none', 'Nichts sehen']].forEach(function (o) { cs.appendChild(el('option', { value: o[0], text: o[1] })); });
+          cs.value = cv;
+          cs.addEventListener('change', function () { act('/projects/' + p.id, { method: 'PATCH', body: { chat_viewers: cs.value } }); });
+          kids.push(row([el('span', { text: 'Chat für Personen mit „Nur ansehen“:' }), cs]));
+        }
         if (isOwner) kids.push(btn('Projekt löschen', function () { if (confirm(kkT('Projekt „{n}“ löschen? Apps bleiben erhalten.', { n: p.name }))) act('/projects/' + p.id, { method: 'DELETE' }); }, 'danger'));
         return el('div', { class: 'card', style: 'margin:10px 0' }, kids);
       }
       function teamCard(t) {
         var owner = t.my_role === 'owner', kids = [el('h3', { text: t.name }), el('p', { class: 'hint', text: kkT('Deine Rolle im Team: {r}', { r: kkT(owner ? 'Besitzer' : 'Mitglied') }) })];
+        kids.push(btn('💬 Team-Chat', function () { openChat('team:' + t.id, t.name, owner); }, 'primary'));
         kids.push(el('h4', { text: 'Mitglieder' }));
         t.members.forEach(function (m) {
-          var me = ctx.myId && m.user_id === ctx.myId;
-          kids.push(row([el('span', { text: (m.name || '') + ' <' + m.email + '>' + (m.role === 'owner' ? ' · ' + kkT('Besitzer') : '') }),
-            (owner && m.role !== 'owner') || (me && m.role !== 'owner') ? btn(me ? 'Verlassen' : 'Entfernen', function () { if (confirm(kkT('Wirklich?'))) act('/teams/' + t.id + '/members/' + m.user_id, { method: 'DELETE' }); }, 'danger') : null]));
+          var me = ctx.myId && m.user_id === ctx.myId, mo = m.role === 'owner';
+          var r = [el('span', { text: (m.name || '') + ' <' + m.email + '>' + (mo ? ' · ' + kkT('Besitzer') : '') })];
+          if (owner && !me) r.push(btn(mo ? 'Besitzer-Rolle entziehen' : 'Zum Besitzer machen', function () {
+            if (confirm(kkT(mo ? 'Besitzer-Rolle von „{n}“ entziehen?' : '„{n}“ zum Team-Besitzer machen? Besitzer haben Vollzugriff.', { n: m.name || m.email })))
+              act('/teams/' + t.id + '/members/' + m.user_id + '/role', { method: 'PUT', body: { role: mo ? 'member' : 'owner' } });
+          }));
+          if ((owner && !mo) || me) r.push(btn(me ? 'Verlassen' : 'Entfernen', function () { if (confirm(kkT('Wirklich?'))) act('/teams/' + t.id + '/members/' + m.user_id, { method: 'DELETE' }); }, 'danger'));
+          kids.push(row(r));
         });
         if (owner) {
           t.invites.forEach(function (i) { kids.push(row([el('span', { class: 'muted', text: kkT('Eingeladen: {e}', { e: i.email }) }), btn('Zurückziehen', function () { act('/teams/' + t.id + '/invites/' + i.id, { method: 'DELETE' }); })])); });
@@ -119,12 +134,81 @@
         return el('section', { class: 'card', style: 'margin:14px 0' }, kids);
       }
 
+      /* ---------- Chat (Abfrage alle 3 Sekunden) ---------- */
+      function closeChat() { if (chat) { clearInterval(chat.timer); chat.box.remove(); chat = null; } }
+      function hhmm(s) { return new Date(s).toLocaleTimeString(kkLocale(), { hour: '2-digit', minute: '2-digit' }); }
+      function openChat(channel, title, canMod, canWrite) {
+        closeChat();
+        var list = el('div', { style: 'flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px' });
+        var input = el('input', { type: 'text', placeholder: 'Nachricht schreiben …', 'aria-label': 'Nachricht', maxlength: 1000, style: 'flex:1;min-width:0' });
+        var sendBtn = btn('Senden', function () { send(); }, 'primary');
+        var empty = el('p', { class: 'hint', text: 'Noch keine Nachrichten.' }); list.appendChild(empty);
+        var head = el('div', { style: 'display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border)' }, [el('b', { text: '💬 ' + title }), btn('✕', closeChat)]);
+        var box = el('div', { role: 'dialog', 'aria-label': 'Chat', style: 'position:fixed;left:0;right:0;bottom:0;max-width:560px;margin:0 auto;height:60vh;z-index:50;display:flex;flex-direction:column;background:var(--bg);color:var(--ink);border:2px solid var(--ink);border-radius:14px 14px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,.3)' },
+          [head, list, el('div', { style: 'display:flex;gap:6px;padding:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))' }, [input, sendBtn])]);
+        document.body.appendChild(box);
+        var c = chat = { box: box, channel: channel, last: 0, timer: null };
+        function setWrite(w) {
+          input.disabled = !w; sendBtn.disabled = !w;
+          input.setAttribute('placeholder', kkT(w ? 'Nachricht schreiben …' : 'Du kannst in diesem Chat nur lesen.'));
+        }
+        setWrite(canWrite !== false);
+        kkTranslateTree(box);
+        function add(msgs) {
+          var stick = list.scrollHeight - list.scrollTop - list.clientHeight < 80 || !c.last;
+          msgs.forEach(function (m) {
+            if (m.id <= c.last) return;
+            c.last = m.id; if (empty.parentNode) empty.remove();
+            var mine = ctx.myId && m.user_id === ctx.myId;
+            var bub = el('div', { style: 'max-width:85%;padding:6px 10px;border-radius:10px;white-space:pre-wrap;word-break:break-word;background:' + (mine ? 'var(--ok-bg)' : 'var(--rule)') + ';align-self:' + (mine ? 'flex-end' : 'flex-start') }, [
+              el('div', { class: 'small muted', text: (mine ? '' : m.author_name + ' · ') + hhmm(m.created_at) }), el('div', { text: m.body })]);
+            if (mine || canMod) bub.appendChild(el('button', { type: 'button', class: 'small', 'aria-label': 'Löschen', title: 'Löschen', text: '×', style: 'margin-left:8px;border:0;background:none;color:var(--muted);cursor:pointer', onclick: function () { call('/chat/' + m.id, { method: 'DELETE' }).then(function () { bub.remove(); }).catch(fail); } }));
+            list.appendChild(bub);
+          });
+          if (stick) list.scrollTop = list.scrollHeight;
+        }
+        function poll() {
+          if (chat !== c) return;
+          if (location.hash.indexOf('#/teams') !== 0) return closeChat();
+          if (document.hidden) return;
+          call('/chat?channel=' + encodeURIComponent(channel) + '&after=' + c.last).then(function (r) { if (chat === c) { setWrite(r.can_write !== false); add(r.data); } }).catch(function (e) { if (e && e.code === 'chat_hidden') closeChat(); });
+        }
+        function send() {
+          var v = input.value.trim(); if (!v) return;
+          call('/chat', { method: 'POST', body: { channel: channel, body: v } }).then(function (r) { input.value = ''; add([r.data]); list.scrollTop = list.scrollHeight; }).catch(fail);
+        }
+        input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); send(); } });
+        poll(); c.timer = setInterval(poll, 3000); input.focus();
+      }
+
+      /* ---------- Benachrichtigungen ---------- */
+      function prefsCard() {
+        function save() { call('/notif-prefs', { method: 'PUT', body: prefs }).then(function () { toast('ok', 'Gespeichert.'); }).catch(fail); }
+        function cb(key, label) {
+          var i = el('input', { type: 'checkbox' }); i.checked = !!prefs[key];
+          i.addEventListener('change', function () { prefs[key] = i.checked; save(); });
+          return el('label', { style: 'display:block;margin:6px 0' }, [i, el('span', { text: ' ' + label })]);
+        }
+        var ls = el('select', { 'aria-label': 'Sprache der Mails' });
+        [['de', 'Deutsch'], ['en', 'English'], ['pt-BR', 'Português']].forEach(function (l) { ls.appendChild(el('option', { value: l[0], text: l[1] })); });
+        ls.value = prefs.lang || window.kkLang || 'de';
+        ls.addEventListener('change', function () { prefs.lang = ls.value; save(); });
+        return el('section', { class: 'card', style: 'margin:14px 0' }, [
+          el('h3', { text: 'Benachrichtigungen per E-Mail' }),
+          el('p', { class: 'hint', text: 'Du bekommst Mails, wenn du Besitzer einer App bist (App-, Projekt- oder Team-Besitzer).' }),
+          cb('on_changes', 'Wenn jemand anderes eine App ändert oder veröffentlicht'),
+          cb('on_secret', 'Wenn jemand das Secret erneuert'),
+          cb('on_errors', 'Wenn die Fehlerquote einer App stark steigt'),
+          row([el('span', { text: 'Sprache der Mails' }), ls])]);
+      }
+
       /* ---------- Zeichnen ---------- */
       function draw() {
         view.textContent = '';
         view.appendChild(el('h1', { text: 'Teams & Apps' }));
         var tn = input('Name des neuen Teams');
         view.appendChild(row([tn, btn('Team erstellen', function () { act('/teams', { method: 'POST', body: { name: tn.value } }); }, 'primary')]));
+        view.appendChild(prefsCard());
         teams.forEach(function (t) { view.appendChild(teamCard(t)); });
         view.appendChild(el('h2', { text: 'Apps: Test-Modus & Verlauf' }));
         view.appendChild(el('p', { class: 'hint', text: 'Neue Apps starten im Test-Modus: Nur eingetragene Testnutzer, du und dein Team dürfen sie verbinden.' }));
@@ -133,7 +217,7 @@
         kkTranslateTree(view);
       }
       function load() {
-        return Promise.all([call('/teams'), call('/apps')]).then(function (r) { teams = r[0].data; apps = r[1].data; draw(); }).catch(fail);
+        return Promise.all([call('/teams'), call('/apps'), call('/notif-prefs')]).then(function (r) { teams = r[0].data; apps = r[1].data; prefs = r[2]; draw(); }).catch(fail);
       }
 
       if (!ctx.getSession()) { view.textContent = ''; view.appendChild(el('p', { text: 'Bitte oben anmelden, um Teams zu nutzen.' })); return; }
