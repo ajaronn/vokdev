@@ -113,6 +113,14 @@ kkAdd({
   'err:chat_hidden': ['The chat is not visible to you.', 'O chat não está visível para você.'],
   'err:chat_readonly': ['You can only read in this chat.', 'Você só pode ler neste chat.'],
   'err:slow': ['Too many messages. Please wait a moment.', 'Muitas mensagens. Aguarde um instante.'],
+  /* Apps und Formulare im Projekt */
+  'Apps im Projekt': ['Apps in the project', 'Apps no projeto'],
+  'Kontaktformulare im Projekt': ['Contact forms in the project', 'Formulários de contato no projeto'],
+  'Noch keine Apps in diesem Projekt.': ['No apps in this project yet.', 'Ainda não há apps neste projeto.'],
+  'Noch keine Formulare in diesem Projekt.': ['No forms in this project yet.', 'Ainda não há formulários neste projeto.'],
+  '+ Neue App': ['+ New app', '+ Novo app'],
+  '+ Neues Formular': ['+ New form', '+ Novo formulário'],
+  'Bearbeiten': ['Edit', 'Editar'],
   /* Fehlermeldungen des Servers (err:<code>) */
   'err:forbidden': ['You do not have permission for this.', 'Você não tem permissão para isso.'],
   'err:invite_invalid': ['Invitation invalid or expired.', 'Convite inválido ou expirado.'],
