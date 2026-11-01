@@ -121,6 +121,12 @@ kkAdd({
   '+ Neue App': ['+ New app', '+ Novo app'],
   '+ Neues Formular': ['+ New form', '+ Novo formulário'],
   'Bearbeiten': ['Edit', 'Editar'],
+  'Feedback-Knöpfe im Projekt': ['Feedback buttons in the project', 'Botões de feedback no projeto'],
+  'KI-Agenten im Projekt': ['AI agents in the project', 'Agentes de IA no projeto'],
+  'Noch keine Feedback-Knöpfe in diesem Projekt.': ['No feedback buttons in this project yet.', 'Ainda não há botões de feedback neste projeto.'],
+  'Noch keine KI-Agenten in diesem Projekt.': ['No AI agents in this project yet.', 'Ainda não há agentes de IA neste projeto.'],
+  '+ Neuer Feedback-Knopf': ['+ New feedback button', '+ Novo botão de feedback'],
+  '+ Neuer Agent': ['+ New agent', '+ Novo agente'],
   /* Fehlermeldungen des Servers (err:<code>) */
   'err:forbidden': ['You do not have permission for this.', 'Você não tem permissão para isso.'],
   'err:invite_invalid': ['Invitation invalid or expired.', 'Convite inválido ou expirado.'],
