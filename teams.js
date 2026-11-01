@@ -92,6 +92,14 @@
         if (!fk.length) fk.push(el('p', { class: 'tm-note', text: 'Noch keine Formulare in diesem Projekt.' }));
         if (canMake) fk.push(row([el('a', { class: 'btn small primary', href: 'contact.html?project=' + p.id, text: '+ Neues Formular' })]));
         kids.push(sec('Kontaktformulare im Projekt', fk));
+        function extra(title, items, page, emptyText, newText) {
+          var xs = (items || []).map(function (f) { return person(who(f.title), canMake ? [el('a', { class: 'btn small', href: page + '?edit=' + f.id, text: 'Bearbeiten' })] : []); });
+          if (!xs.length) xs.push(el('p', { class: 'tm-note', text: emptyText }));
+          if (canMake) xs.push(row([el('a', { class: 'btn small primary', href: page + '?project=' + p.id, text: newText })]));
+          kids.push(sec(title, xs));
+        }
+        extra('Feedback-Knöpfe im Projekt', p.feedback, 'feedback.html', 'Noch keine Feedback-Knöpfe in diesem Projekt.', '+ Neuer Feedback-Knopf');
+        extra('KI-Agenten im Projekt', p.agents, 'agents.html', 'Noch keine KI-Agenten in diesem Projekt.', '+ Neuer Agent');
         var people = team.members.map(function (mem) {
           var pm = p.members.filter(function (x) { return x.user_id === mem.user_id; })[0];
           var isTO = mem.role === 'owner';
