@@ -262,29 +262,39 @@
     draw();
   }
 
+  var pendingProject = null, pendingEdit = null, newProj = null;
   function pageApps() {
     if (!getSession()) {
       mount([el('section', { class: 'card center' }, [el('h1', { text: 'Meine Apps' }), el('p', { class: 'muted', text: 'Melde dich mit deinem Karteikasten-Konto an.' }),
         kkBtn('Mit Karteikasten fortfahren', 'primary', login)])]); return;
     }
+    var m1 = location.hash.match(/[?&]project=([0-9a-f-]{36})/), m2 = location.hash.match(/[?&]edit=([0-9a-f-]{36})/);
+    pendingProject = m1 ? m1[1] : null; pendingEdit = m2 ? m2[1] : null;
     mount([el('div', { class: 'spinner' })]);
     Promise.all([call(APPS_API, '/status'), call(APPS_API, '/apps')]).then(function (r) { drawApps(r[0], r[1].data); })
       .catch(function (e) { mount([el('div', { class: 'notice err', text: kkT('Konnte nicht geladen werden: {m}', { m: e.message }) }), el('button', { class: 'btn small', onclick: pageApps, text: 'Erneut versuchen' })]); });
   }
 
   function drawApps(status, apps) {
+    if (pendingEdit) {
+      var pe = pendingEdit; pendingEdit = null; pendingProject = null; history.replaceState(null, '', '#/apps');
+      var ea = apps.filter(function (x) { return x.id === pe; })[0];
+      if (ea && ea.my_role !== 'viewer') { form(ea, status); return; }
+    }
+    if (pendingProject) { newProj = pendingProject; pendingProject = null; history.replaceState(null, '', '#/apps'); form(null, status); return; }
+    newProj = null;
     var nodes = [el('h1', { text: 'Meine Apps' })];
     if (!status.two_factor) nodes.push(el('div', { class: 'notice warn' }, [
       document.createTextNode('Zum Erstellen und Ändern von Apps muss die Zwei-Faktor-Authentifizierung aktiviert sein. Aktiviere sie in Karteikasten unter Einstellungen → Konto. '),
       el('a', { href: CONFIG.MAIN_APP, text: 'Karteikasten öffnen' })]));
-    nodes.push(el('div', { class: 'btns' }, [el('button', { class: 'btn primary', disabled: !status.two_factor || apps.length >= status.max_apps, onclick: function () { form(null, status); }, text: '+ Neue App' })]));
+    nodes.push(el('div', { class: 'btns' }, [el('button', { class: 'btn primary', disabled: !status.two_factor, onclick: function () { form(null, status); }, text: '+ Neue App' })]));
     if (!apps.length) nodes.push(el('section', { class: 'card center' }, [el('p', { class: 'muted', text: 'Du hast noch keine Apps.' })]));
     apps.forEach(function (a) {
       var lu = httpsUrl(a.logo_url);
       nodes.push(el('section', { class: 'card' }, [
         el('div', { class: 'approw' }, [lu ? el('img', { class: 'logo', src: lu, alt: '' }) : el('div', { class: 'logo', text: a.name[0].toUpperCase() }),
           el('div', { class: 'grow' }, [el('h2', { text: a.name }), el('span', { class: 'tag', text: a.client_type === 'public' ? 'öffentlich (PKCE)' : 'vertraulich' }), a.status !== 'active' ? el('span', { class: 'tag', text: ' gesperrt' }) : null]),
-          el('button', { class: 'btn small', onclick: function () { form(a, status); }, text: 'Bearbeiten' })]),
+          a.my_role === 'viewer' ? null : el('button', { class: 'btn small', onclick: function () { form(a, status); }, text: 'Bearbeiten' })]),
         el('p', { class: 'kv' }, [document.createTextNode('Client-ID: '), code(a.client_id || '–')]),
         el('p', { class: 'kv' }, [document.createTextNode('Berechtigungen: '), document.createTextNode(a.scopes.join(', '))]),
         el('p', { class: 'kv' }, [document.createTextNode('Weiterleitung: '), document.createTextNode(a.redirect_uris.join(', '))]), statsBlock(a)]));
@@ -332,6 +342,7 @@
       ev.preventDefault(); if (done) { pageApps(); return; } saveBtn.disabled = true;
       var body = { name: f.name.value.trim(), description: f.description.value.trim(), developer_name: f.dev.value.trim(), website_url: f.site.value.trim(), privacy_url: f.priv.value.trim(), terms_url: f.terms.value.trim(),
         redirect_uris: f.redir.value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean), scopes: scopeBoxes.filter(function (b) { return b.checked; }).map(function (b) { return b.value; }), client_type: typeSel.value };
+      if (!edit && newProj) body.project_id = newProj;
       call(APPS_API, edit ? '/apps/' + app.id : '/apps', { method: edit ? 'PATCH' : 'POST', body: body }).then(function (res) {
         var id = edit ? app.id : res.id;
         return (logoData ? call(APPS_API, '/apps/' + id + '/logo', { method: 'POST', body: { data: logoData.b64 } }) : Promise.resolve()).then(function () { return res; });
@@ -351,8 +362,8 @@
       el('div', { class: 'btns' }, [saveBtn, el('button', { class: 'btn', type: 'button', onclick: pageApps, text: 'Abbrechen' })])
     ]);
     var extra = [];
-    if (edit && app.client_type === 'confidential') extra.push(el('button', { class: 'btn small', type: 'button', onclick: function () { if (!confirm(kkT('Neues Secret erzeugen? Das alte wird ungültig.'))) return; call(APPS_API, '/apps/' + app.id + '/secret', { method: 'POST' }).then(function (r) { secretBox.textContent = ''; secretBox.appendChild(el('div', { class: 'notice warn' }, [el('b', { text: 'Neues Secret: ' }), code(r.client_secret)])); }).catch(function (e) { toast('err', e.message); }); }, text: 'Secret erneuern' }));
-    if (edit) extra.push(el('button', { class: 'btn small danger', type: 'button', onclick: function () { if (!confirm(kkT('App „{n}“ endgültig löschen? Alle Nutzerzugriffe enden.', { n: app.name }))) return; call(APPS_API, '/apps/' + app.id, { method: 'DELETE' }).then(pageApps).catch(function (e) { toast('err', e.message); }); }, text: 'App löschen' }));
+    if (edit && app.client_type === 'confidential' && (!app.my_role || app.my_role === 'owner')) extra.push(el('button', { class: 'btn small', type: 'button', onclick: function () { if (!confirm(kkT('Neues Secret erzeugen? Das alte wird ungültig.'))) return; call(APPS_API, '/apps/' + app.id + '/secret', { method: 'POST' }).then(function (r) { secretBox.textContent = ''; secretBox.appendChild(el('div', { class: 'notice warn' }, [el('b', { text: 'Neues Secret: ' }), code(r.client_secret)])); }).catch(function (e) { toast('err', e.message); }); }, text: 'Secret erneuern' }));
+    if (edit && (!app.my_role || app.my_role === 'owner')) extra.push(el('button', { class: 'btn small danger', type: 'button', onclick: function () { if (!confirm(kkT('App „{n}“ endgültig löschen? Alle Nutzerzugriffe enden.', { n: app.name }))) return; call(APPS_API, '/apps/' + app.id, { method: 'DELETE' }).then(pageApps).catch(function (e) { toast('err', e.message); }); }, text: 'App löschen' }));
     drawPreview();
     mount([el('h1', { text: edit ? 'App bearbeiten' : 'Neue App' }), el('div', { class: 'two' }, [el('div', { class: 'card' }, [fm, el('div', { class: 'btns' }, extra)]), el('div', { class: 'sticky' }, [preview])])]);
   }
