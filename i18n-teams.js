@@ -29,6 +29,7 @@ kkAdd({
   'Eingeladen: {e}': ['Invited: {e}', 'Convidado: {e}'],
   'Zurückziehen': ['Withdraw', 'Cancelar convite'],
   'E-Mail der Person': ['Email of the person', 'E-mail da pessoa'],
+  'Sprache der Einladung': ['Language of the invitation', 'Idioma do convite'],
   'Per E-Mail einladen': ['Invite by email', 'Convidar por e-mail'],
   'Einladung gesendet.': ['Invitation sent.', 'Convite enviado.'],
   'Du bist dem Team beigetreten.': ['You have joined the team.', 'Você entrou na equipe.'],
