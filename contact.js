@@ -15,7 +15,7 @@
     login: ['Bitte melde dich zuerst auf der Developer-Seite an.', 'Please sign in on the developer page first.', 'Entre primeiro na página de desenvolvedor.'],
     loginBtn: ['Zur Anmeldung', 'Go to sign-in', 'Ir para o login'],
     mine: ['Meine Formulare', 'My forms', 'Meus formulários'], none: ['Noch keine Formulare.', 'No forms yet.', 'Nenhum formulário ainda.'],
-    newA: ['Neues Formular', 'New form', 'Novo formulário'], edit: ['Bearbeiten', 'Edit', 'Editar'], del: ['Löschen', 'Delete', 'Excluir'],
+    newA: ['Neues Formular', 'New form', 'Novo formulário'], edit: ['Bearbeiten', 'Edit', 'Editar'], del: ['Löschen', 'Delete', 'Excluir'], project: ['Projekt (optional)', 'Project (optional)', 'Projeto (opcional)'], noProject: ['(kein Projekt)', '(no project)', '(sem projeto)'],
     delQ: ['Dieses Formular wirklich löschen?', 'Really delete this form?', 'Excluir este formulário?'],
     save: ['Speichern & testen', 'Save & test', 'Salvar e testar'], back: ['Zurück', 'Back', 'Voltar'],
     saved: ['Gespeichert! Eine Test-E-Mail ging an deine Adresse. Unten siehst du die Vorschau, auch dort gesendete Nachrichten kommen wirklich an.', 'Saved! A test email was sent to your address. You can see the preview below; messages sent there really arrive too.', 'Salvo! Um e-mail de teste foi enviado ao seu endereço. A prévia aparece embaixo; mensagens enviadas ali também chegam de verdade.'],
@@ -98,13 +98,23 @@
     msg(t(m), true);
   }
 
+  var PROJ = [], preProject = '';
+  var DEEP = { project: (location.search.match(/[?&]project=([0-9a-f-]{36})/) || [])[1], edit: (location.search.match(/[?&]edit=([0-9a-f-]{36})/) || [])[1] };
+  function projName(a) { var p = a.project_id && PROJ.filter(function (x) { return x.id === a.project_id; })[0]; return p ? ' · ' + p.team + ' / ' + p.name : ''; }
   function list() {
     window.KKContact.destroy();
-    call({ action: 'list' }).then(function (j) {
+    Promise.all([call({ action: 'list' }), call({ action: 'projects' }).catch(function () { return { projects: [] }; })]).then(function (rr) {
+      var j = rr[0]; PROJ = rr[1].projects || [];
+      if (DEEP.edit || DEEP.project) {
+        var dp = DEEP; DEEP = {}; try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) { /* egal */ }
+        var fa = dp.edit && j.forms.filter(function (x) { return x.id === dp.edit; })[0];
+        if (fa && fa.my_role !== 'viewer') { form(fa); return; }
+        if (dp.project && !dp.edit) { preProject = dp.project; form(null); return; }
+      }
       var cards = j.forms.map(function (a) {
-        return h('div', { class: 'card' }, [h('b', { text: a.pub.title || a.priv.to_email || a.id }), h('div', { class: 'small muted', text: a.priv.to_email + ' · ' + a.id }), h('div', { class: 'row' }, [
-          h('button', { class: 'b', type: 'button', text: t(X.edit), onclick: function () { form(a); } }),
-          h('button', { class: 'b s', type: 'button', text: t(X.del), onclick: function () { if (confirm(t(X.delQ))) call({ action: 'delete', id: a.id }).then(list).catch(fail); } })])]);
+        return h('div', { class: 'card' }, [h('b', { text: a.pub.title || a.priv.to_email || a.id }), h('div', { class: 'small muted', text: a.priv.to_email + ' · ' + a.id + projName(a) }), h('div', { class: 'row' }, [
+          a.my_role === 'viewer' ? null : h('button', { class: 'b', type: 'button', text: t(X.edit), onclick: function () { form(a); } }),
+          (!a.my_role || a.my_role === 'owner') ? h('button', { class: 'b s', type: 'button', text: t(X.del), onclick: function () { if (confirm(t(X.delQ))) call({ action: 'delete', id: a.id }).then(list).catch(fail); } }) : null])]);
       });
       mount([h('h1', { text: t(X.title) }), h('p', { class: 'muted', text: t(X.intro) }), guide(true), h('h2', { text: t(X.mine) })]
         .concat(cards.length ? cards : [h('p', { class: 'muted', text: t(X.none) })])
@@ -131,6 +141,16 @@
       else { el = h('input', { id: 'f_' + f.k, type: f.type, autocomplete: 'off', min: f.min, max: f.max }); el.value = v; if (f.k === 'key' && a && a.priv.has_key) el.placeholder = t(X.kept); if (f.k === 'color' && !/^#[0-9a-f]{6}$/i.test(v)) el.value = '#A8442E'; }
       inputs[f.k] = { f: f, el: el }; nodes.push(lb, el);
     });
+    var projSel = null;
+    var pickable = PROJ.filter(function (p) { return p.role >= 2; });
+    if (pickable.length || (a && a.project_id)) {
+      nodes.push(h('label', { text: t(X.project), for: 'f_project' }));
+      projSel = h('select', { id: 'f_project' }, [h('option', { value: '', text: t(X.noProject) })].concat(pickable.map(function (p) { return h('option', { value: p.id, text: p.team + ' / ' + p.name }); })));
+      projSel.value = a ? (a.project_id || '') : preProject;
+      if (a && a.my_role && a.my_role !== 'owner') projSel.disabled = true;
+      nodes.push(projSel);
+    }
+    preProject = '';
     var out = h('div');
     function embed(newId) {
       out.textContent = '';
@@ -140,6 +160,7 @@
     }
     nodes.push(h('div', { class: 'row' }, [h('button', { class: 'b', type: 'button', text: t(X.save), onclick: function () {
       var body = { action: 'save', id: id, pub: {}, priv: {} };
+      if (projSel && !projSel.disabled) body.project_id = projSel.value || null;
       Object.keys(inputs).forEach(function (k) {
         var f = inputs[k].f, el = inputs[k].el, v = f.type === 'checkbox' ? el.checked : f.type === 'number' ? Number(el.value) : el.value;
         (f.g === 'pub' ? body.pub : f.g === 'priv' ? body.priv : body)[k] = v;
