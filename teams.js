@@ -63,8 +63,11 @@
         if (owner) {
           t.invites.forEach(function (i) { kids.push(row([el('span', { class: 'muted', text: kkT('Eingeladen: {e}', { e: i.email }) }), btn('Zurückziehen', function () { act('/teams/' + t.id + '/invites/' + i.id, { method: 'DELETE' }); })])); });
           var mail = input('E-Mail der Person', 'email');
-          kids.push(row([mail, btn('Per E-Mail einladen', function () {
-            call('/teams/' + t.id + '/invites', { method: 'POST', body: { email: mail.value } }).then(function () { toast('ok', 'Einladung gesendet.'); load(); }).catch(fail);
+          var ls = el('select', { 'aria-label': 'Sprache der Einladung' });
+          [['de', 'Deutsch'], ['en', 'English'], ['pt-BR', 'Português']].forEach(function (l) { ls.appendChild(el('option', { value: l[0], text: l[1] })); });
+          ls.value = window.kkLang || 'de';
+          kids.push(row([mail, ls, btn('Per E-Mail einladen', function () {
+            call('/teams/' + t.id + '/invites', { method: 'POST', body: { email: mail.value, lang: ls.value } }).then(function () { toast('ok', 'Einladung gesendet.'); load(); }).catch(fail);
           }, 'primary')]));
         }
         kids.push(el('h4', { text: 'Projekte' }));
