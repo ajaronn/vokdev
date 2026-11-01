@@ -15,7 +15,7 @@
     login: ['Bitte melde dich zuerst auf der Developer-Seite an.', 'Please sign in on the developer page first.', 'Entre primeiro na página de desenvolvedor.'],
     loginBtn: ['Zur Anmeldung', 'Go to sign-in', 'Ir para o login'],
     mine: ['Meine Feedback-Knöpfe', 'My feedback buttons', 'Meus botões de feedback'], none: ['Noch keine Feedback-Knöpfe.', 'No feedback buttons yet.', 'Nenhum botão de feedback ainda.'],
-    newA: ['Neuer Feedback-Knopf', 'New feedback button', 'Novo botão de feedback'], edit: ['Bearbeiten', 'Edit', 'Editar'], del: ['Löschen', 'Delete', 'Excluir'], see: ['Bewertungen ansehen', 'View reviews', 'Ver avaliações'],
+    newA: ['Neuer Feedback-Knopf', 'New feedback button', 'Novo botão de feedback'], edit: ['Bearbeiten', 'Edit', 'Editar'], del: ['Löschen', 'Delete', 'Excluir'], project: ['Projekt (optional)', 'Project (optional)', 'Projeto (opcional)'], noProject: ['(kein Projekt)', '(no project)', '(sem projeto)'], see: ['Bewertungen ansehen', 'View reviews', 'Ver avaliações'],
     delQ: ['Diesen Knopf wirklich löschen? Alle Bewertungen gehen verloren.', 'Really delete this button? All reviews will be lost.', 'Excluir este botão? Todas as avaliações serão perdidas.'],
     delR: ['Diese Bewertung löschen?', 'Delete this review?', 'Excluir esta avaliação?'],
     save: ['Speichern', 'Save', 'Salvar'], back: ['Zurück', 'Back', 'Voltar'],
@@ -81,14 +81,24 @@
   }
   function stars(n) { var s = ''; for (var i = 1; i <= 5; i++) s += i <= Math.round(n) ? '★' : '☆'; return s; }
 
+  var PROJ = [], preProject = '';
+  var DEEP = { project: (location.search.match(/[?&]project=([0-9a-f-]{36})/) || [])[1], edit: (location.search.match(/[?&]edit=([0-9a-zA-Z-]{4,40})/) || [])[1] };
+  function projName(a) { var p = a.project_id && PROJ.filter(function (x) { return x.id === a.project_id; })[0]; return p ? ' · ' + p.team + ' / ' + p.name : ''; }
   function list() {
     window.KKFeedback.destroy();
     call({ action: 'list_forms' }).then(function (j) {
+      PROJ = j.projects || [];
+      if (DEEP.edit || DEEP.project) {
+        var dp = DEEP; DEEP = {}; try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) { /* egal */ }
+        var fa = dp.edit && j.forms.filter(function (x) { return x.id === dp.edit; })[0];
+        if (fa && fa.my_role !== 'viewer') { form(fa); return; }
+        if (dp.project && !dp.edit) { preProject = dp.project; form(null); return; }
+      }
       var cards = j.forms.map(function (a) {
-        return h('div', { class: 'card' }, [h('b', { text: a.pub.title || a.id }), h('div', { class: 'small muted', text: a.id + (a.priv.domains ? ' · ' + a.priv.domains : '') }), h('div', { class: 'row' }, [
+        return h('div', { class: 'card' }, [h('b', { text: a.pub.title || a.id }), h('div', { class: 'small muted', text: a.id + (a.priv.domains ? ' · ' + a.priv.domains : '') + projName(a) }), h('div', { class: 'row' }, [
           h('button', { class: 'b', type: 'button', text: t(X.see), onclick: function () { reviews(a); } }),
-          h('button', { class: 'b s', type: 'button', text: t(X.edit), onclick: function () { form(a); } }),
-          h('button', { class: 'b s', type: 'button', text: t(X.del), onclick: function () { if (confirm(t(X.delQ))) call({ action: 'delete', id: a.id }).then(list).catch(fail); } })])]);
+          a.my_role === 'viewer' ? null : h('button', { class: 'b s', type: 'button', text: t(X.edit), onclick: function () { form(a); } }),
+          (!a.my_role || a.my_role === 'owner') ? h('button', { class: 'b s', type: 'button', text: t(X.del), onclick: function () { if (confirm(t(X.delQ))) call({ action: 'delete', id: a.id }).then(list).catch(fail); } }) : null])]);
       });
       mount([h('h1', { text: t(X.title) }), h('p', { class: 'muted', text: t(X.intro) }), guide(true), h('h2', { text: t(X.mine) })]
         .concat(cards.length ? cards : [h('p', { class: 'muted', text: t(X.none) })])
@@ -137,6 +147,16 @@
       else { el = h('input', { id: 'f_' + f.k, type: f.type, autocomplete: 'off', min: f.min, max: f.max }); el.value = v; if (f.k === 'color' && !/^#[0-9a-f]{6}$/i.test(v)) el.value = '#A8442E'; }
       inputs[f.k] = { f: f, el: el }; nodes.push(lb, el);
     });
+    var projSel = null;
+    var pickable = PROJ.filter(function (p) { return p.role >= 2; });
+    if (pickable.length || (a && a.project_id)) {
+      nodes.push(h('label', { text: t(X.project), for: 'f_project' }));
+      projSel = h('select', { id: 'f_project' }, [h('option', { value: '', text: t(X.noProject) })].concat(pickable.map(function (p) { return h('option', { value: p.id, text: p.team + ' / ' + p.name }); })));
+      projSel.value = a ? (a.project_id || '') : preProject;
+      if (a && a.my_role && a.my_role !== 'owner') projSel.disabled = true;
+      nodes.push(projSel);
+    }
+    preProject = '';
     var out = h('div');
     function embed(newId) {
       out.textContent = '';
@@ -146,6 +166,7 @@
     }
     nodes.push(h('div', { class: 'row' }, [h('button', { class: 'b', type: 'button', text: t(X.save), onclick: function () {
       var body = { action: 'save', id: id, pub: {}, priv: {} };
+      if (projSel && !projSel.disabled) body.project_id = projSel.value || null;
       Object.keys(inputs).forEach(function (k) {
         var f = inputs[k].f, el = inputs[k].el, v = f.type === 'checkbox' ? el.checked : f.type === 'number' ? Number(el.value) : el.value;
         (f.g === 'pub' ? body.pub : body.priv)[k] = v;
