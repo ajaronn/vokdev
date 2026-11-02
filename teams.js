@@ -100,7 +100,8 @@
         }
         extra('Feedback-Knöpfe im Projekt', p.feedback, 'feedback.html', 'Noch keine Feedback-Knöpfe in diesem Projekt.', '+ Neuer Feedback-Knopf');
         extra('Umfragen im Projekt', polls.filter(function (x) { return x.project_id === p.id; }).map(function (x) { return { id: x.id, title: (x.pub && (x.pub.title || x.pub.question)) || x.id }; }), 'poll.html', 'Noch keine Umfragen in diesem Projekt.', '+ Neue Umfrage');
-        extra('KI-Agenten im Projekt', p.agents, 'agents.html', 'Noch keine KI-Agenten in diesem Projekt.', '+ Neuer Agent');
+        extra('NPS-Umfragen im Projekt', nps.filter(function (x) { return x.project_id === p.id; }).map(function (x) { return { id: x.id, title: (x.pub && (x.pub.title || x.pub.question)) || x.id }; }), 'nps.html', 'Noch keine NPS-Umfragen in diesem Projekt.', '+ Neue NPS-Umfrage');  
+         extra('KI-Agenten im Projekt', p.agents, 'agents.html', 'Noch keine KI-Agenten in diesem Projekt.', '+ Neuer Agent');
         var people = team.members.map(function (mem) {
           var pm = p.members.filter(function (x) { return x.user_id === mem.user_id; })[0];
           var isTO = mem.role === 'owner';
