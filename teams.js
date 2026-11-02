@@ -277,8 +277,9 @@
 }
       function load() {
         return Promise.all([call('/teams'), call('/apps'), call('/notif-prefs')])
-          .then(function (r) { teams = r[0].data; apps = r[1].data; prefs = r[2]; return loadPolls(); })
-          .then(function (p) { polls = p; draw(); }).catch(fail);
+         .then(function (r) { teams = r[0].data; apps = r[1].data; prefs = r[2]; return loadPolls(); })
+         .then(function (p) { polls = p; return loadNps(); })
+         .then(function (n) { nps = n; draw(); }).catch(fail);
       }
 
       if (!ctx.getSession()) { view.textContent = ''; view.appendChild(el('p', { text: 'Bitte oben anmelden, um Teams zu nutzen.' })); kkTranslateTree(view); return; }
