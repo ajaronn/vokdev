@@ -269,6 +269,12 @@
         return fetch('https://qujcvvxdvpqnsfgvleid.supabase.co/functions/v1/poll', { method: 'POST', headers: { 'content-type': 'application/json', Authorization: 'Bearer ' + s.access_token }, body: JSON.stringify({ action: 'list_forms' }) })
           .then(function (r) { return r.ok ? r.json() : { forms: [] }; }).then(function (j) { return j.forms || []; }).catch(function () { return []; });
       }
+       function loadNps() {
+  var s = ctx.getSession();
+  if (!s || !s.access_token) return Promise.resolve([]);
+  return fetch('https://qujcvvxdvpqnsfgvleid.supabase.co/functions/v1/nps', { method: 'POST', headers: { 'content-type': 'application/json', Authorization: 'Bearer ' + s.access_token }, body: JSON.stringify({ action: 'list_forms' }) })
+    .then(function (r) { return r.ok ? r.json() : { forms: [] }; }).then(function (j) { return j.forms || []; }).catch(function () { return []; });
+}
       function load() {
         return Promise.all([call('/teams'), call('/apps'), call('/notif-prefs')])
           .then(function (r) { teams = r[0].data; apps = r[1].data; prefs = r[2]; return loadPolls(); })
