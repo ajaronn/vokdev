@@ -22,7 +22,7 @@
   window.kkTeams = {
     render: function (ctx) {
       var el = ctx.el, view = ctx.view, call = ctx.call, toast = ctx.toast;
-      var teams = [], apps = [], polls = [], histData = {}, testData = {}, prefs = {}, chat = null, openSet = {};
+      var teams = [], apps = [], polls = [], nps = [], histData = {}, testData = {}, prefs = {}, chat = null, openSet = {};
 
       function fail(e) { toast('err', e.message); }
       function act(p, o) { return call(p, o).then(load).catch(fail); }
