@@ -101,7 +101,7 @@
     /* Zustände: Knopf-Modus = Knopf + Fenster; Popup-Modus = Mitte-Fenster, danach optional kleiner Knopf */
     var isOpen = false;
     function setOpen(v) {
-      isOpen = v; panel.hidden = !v;
+      isOpen = v; panel.hidden = !v; lb.setAttribute('aria-expanded', v ? 'true' : 'false');
       if (popup && v) { w.className = 'w mod' + mk; w.hidden = false; lb.hidden = true; }
       else if (popup) { w.className = 'w fab ' + pos + mk; lb.hidden = !c.popup_button; w.hidden = !c.popup_button; }
       else { w.className = 'w fab ' + pos + mk; lb.hidden = false; w.hidden = false; }
@@ -117,7 +117,7 @@
       };
     });
     $('.x').onclick = function () { setOpen(false); };
-    lb.onclick = function () { setOpen(true); };
+    lb.onclick = function () { setOpen(!isOpen); }; // zweiter Klick schließt wieder
     if (popup) w.addEventListener('mousedown', function (e) { if (e.target === w) setOpen(false); });
     sh.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isOpen) setOpen(false); });
 
