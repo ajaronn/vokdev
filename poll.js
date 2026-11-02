@@ -44,8 +44,8 @@
     popBtn: ['Nach dem Schließen kleinen Knopf zum späteren Abstimmen zeigen', 'After closing, show a small button to vote later', 'Após fechar, mostrar um botão pequeno para votar depois'],
     aiH: ['KI entscheidet (deine eigene KI-Schnittstelle)', 'AI decides (your own AI API)', 'IA decide (sua própria API de IA)'],
     aiHint: ['Der Schlüssel wird nur serverseitig gespeichert und nie an Besucher ausgegeben. Die KI bekommt nur anonyme Infos: Seite, Titel, Sprache, Gerät, Uhrzeit, Anzahl Besuche, Sekunden auf der Seite, Herkunft. Du zahlst die KI-Kosten bei deinem Anbieter.', 'The key is stored server-side only and never shown to visitors. The AI only gets anonymous info: page, title, language, device, hour, visit count, seconds on page, referrer. You pay the AI costs at your provider.', 'A chave é guardada só no servidor e nunca mostrada aos visitantes. A IA recebe só informações anônimas: página, título, idioma, dispositivo, hora, número de visitas, segundos na página, origem. Você paga os custos da IA ao seu provedor.'],
-    aiProv: ['Anbieter', 'Provider', 'Provedor'], aiUrl: ['Adresse (Anthropic: leer lassen. OpenAI-kompatibel: z. B. https://api.openai.com/v1/chat/completions)', 'Address (Anthropic: leave empty. OpenAI-compatible: e.g. https://api.openai.com/v1/chat/completions)', 'Endereço (Anthropic: deixe vazio. Compatível com OpenAI: ex. https://api.openai.com/v1/chat/completions)'],
-    aiModel: ['Modell (Anthropic: leer = claude-haiku-4-5)', 'Model (Anthropic: empty = claude-haiku-4-5)', 'Modelo (Anthropic: vazio = claude-haiku-4-5)'],
+    aiProv: ['Anbieter', 'Provider', 'Provedor'], aiUrl: ['Adresse (Anthropic und Gemini: leer lassen. OpenAI-kompatibel: z. B. https://api.openai.com/v1/chat/completions)', 'Address (Anthropic and Gemini: leave empty. OpenAI-compatible: e.g. https://api.openai.com/v1/chat/completions)', 'Endereço (Anthropic e Gemini: deixe vazio. Compatível com OpenAI: ex. https://api.openai.com/v1/chat/completions)'],
+    aiModel: ['Modell (leer = Standard: claude-haiku-4-5 bzw. gemini-2.5-flash)', 'Model (empty = default: claude-haiku-4-5 or gemini-2.5-flash)', 'Modelo (vazio = padrão: claude-haiku-4-5 ou gemini-2.5-flash)'],
     aiKey: ['API-Schlüssel', 'API key', 'Chave de API'], aiKeySet: ['(gespeichert, leer lassen = behalten)', '(saved, leave empty = keep)', '(salva, deixe vazio = manter)'],
     aiPrompt: ['Bedingung: Wann soll die Umfrage erscheinen? (z. B. „Nur wenn der Besucher schon mehr als 2 Mal da war und auf einer Produktseite ist“)', 'Condition: when should the poll appear? (e.g. “Only if the visitor has been here more than twice and is on a product page”)', 'Condição: quando a enquete deve aparecer? (ex.: “Só se o visitante já veio mais de 2 vezes e está numa página de produto”)'],
     rTitle: ['Ergebnisse', 'Results', 'Resultados'], rNone: ['Noch keine Stimmen.', 'No votes yet.', 'Ainda sem votos.'], rTotal: ['Stimmen gesamt', 'Total votes', 'Total de votos'], rOther: ['Andere (eigene Antworten)', 'Other (own answers)', 'Outra (respostas próprias)'],
@@ -55,7 +55,7 @@
       site: ['Ganze Webseite (eine gemeinsame Stimme)', 'Whole website (one shared vote)', 'Site inteiro (um voto comum)'], page: ['Pro Unterseite (jede Seite einzeln)', 'Per page (each page separately)', 'Por página (cada página separada)'],
       button: ['Knopf (Besucher öffnen selbst)', 'Button (visitors open it themselves)', 'Botão (visitantes abrem sozinhos)'], popup: ['Popup (öffnet sich automatisch)', 'Popup (opens automatically)', 'Popup (abre automaticamente)'],
       next_visit: ['Beim nächsten Öffnen der Webseite am Gerät', 'The next time the website is opened on the device', 'Na próxima vez que o site for aberto no dispositivo'], tdate: ['Ab einem bestimmten Tag', 'From a certain day', 'A partir de um certo dia'], ai: ['Wenn die KI es entscheidet', 'When the AI decides', 'Quando a IA decidir'],
-      anthropic: ['Anthropic (Claude)', 'Anthropic (Claude)', 'Anthropic (Claude)'], openai: ['OpenAI-kompatibel', 'OpenAI-compatible', 'Compatível com OpenAI'] }
+      anthropic: ['Anthropic (Claude)', 'Anthropic (Claude)', 'Anthropic (Claude)'], gemini: ['Google Gemini (AI Studio)', 'Google Gemini (AI Studio)', 'Google Gemini (AI Studio)'], openai: ['OpenAI-kompatibel', 'OpenAI-compatible', 'Compatível com OpenAI'] }
   };
   var LN = { de: 'Deutsch', en: 'English', 'pt-BR': 'Português (BR)' };
   var O = function (k) { return X.opt[k] ? t(X.opt[k]) : (LN[k] || k); };
@@ -179,7 +179,7 @@
     put(dateBox, field('popup_date', 'date', X.date, ''));
     put(popBox, [dateBox]); put(popBox, field('popup_delay', 'number', X.delay, 0, [0, 120])); put(popBox, field('popup_button', 'checkbox', X.popBtn, true));
     aiBox.appendChild(h('h3', { text: t(X.aiH) })); aiBox.appendChild(h('p', { class: 'muted small', text: t(X.aiHint) }));
-    put(aiBox, pfield('ai_provider', 'select', X.aiProv, 'anthropic', ['anthropic', 'openai'])); put(aiBox, pfield('ai_endpoint', 'text', X.aiUrl)); put(aiBox, pfield('ai_model', 'text', X.aiModel)); put(aiBox, pfield('ai_key', 'password', X.aiKey)); put(aiBox, pfield('ai_prompt', 'textarea', X.aiPrompt));
+    put(aiBox, pfield('ai_provider', 'select', X.aiProv, 'anthropic', ['anthropic', 'gemini', 'openai'])); put(aiBox, pfield('ai_endpoint', 'text', X.aiUrl)); put(aiBox, pfield('ai_model', 'text', X.aiModel)); put(aiBox, pfield('ai_key', 'password', X.aiKey)); put(aiBox, pfield('ai_prompt', 'textarea', X.aiPrompt));
     put(popBox, [aiBox]); nodes.push(popBox);
     function vis() { var pop = inp.mode.value === 'popup', tr = inp.trigger.value; popBox.hidden = !pop; dateBox.hidden = tr !== 'date'; aiBox.hidden = tr !== 'ai'; }
     inp.mode.onchange = vis; inp.trigger.onchange = vis; vis();
