@@ -3,7 +3,7 @@
 (function () {
   'use strict';
   var SB = 'https://qujcvvxdvpqnsfgvleid.supabase.co';
-  var KEY = 'HIER_DEN_ANON_KEY_EINTRAGEN';      // Supabase > Project Settings > API > anon public
+  var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1amN2dnhkdnBxbnNmZ3ZsZWlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwODQ3OTcsImV4cCI6MjEwNTY2MDc5N30.aNsVqELIJTSDIuJOEj6CL_ii2NL6JUBjZRDb3ZtcTWY';      // Supabase > Project Settings > API > anon public
   var SITE_BASE = 'https://ajaronn.github.io/web/';
   var LS_SESSION = 'kk_host_session', LS_LANG = 'kk_lang';
 
