@@ -29,6 +29,10 @@
   T3('linkTitle', 'Link zur eigenen Formularseite', 'Link to the standalone form page', 'Link da página própria do formulário');
   T3('linkHint', 'Eigene Webseite nur für dieses Formular (wie bei Google Forms). Link teilen oder per QR-Code verbreiten. Der Code unten (Popup und Knopf) funktioniert weiterhin.', 'A web page of its own just for this form (like Google Forms). Share the link or spread it as a QR code. The code below (popup and button) keeps working.', 'Uma página própria só para este formulário (como no Google Forms). Compartilhe o link ou use um QR code. O código abaixo (popup e botão) continua funcionando.');
   T3('linkOpen', 'Seite öffnen', 'Open page', 'Abrir página');
+  T3('fImage', 'Titelbild (wird oben im Formular angezeigt)', 'Header image (shown at the top of the form)', 'Imagem de capa (exibida no topo do formulário)');
+  T3('imgUp', 'Bild hochladen', 'Upload image', 'Enviar imagem'); T3('imgRm', 'Bild entfernen', 'Remove image', 'Remover imagem');
+  T3('imgBad', 'Bitte wähle eine Bilddatei (JPG, PNG oder WebP).', 'Please choose an image file (JPG, PNG or WebP).', 'Escolha um arquivo de imagem (JPG, PNG ou WebP).');
+  T3('imgBig', 'Das Bild konnte nicht klein genug gemacht werden. Nimm ein anderes.', 'The image could not be made small enough. Choose another one.', 'Não foi possível reduzir a imagem o bastante. Escolha outra.');
   T3('openHint', 'Eigener Knopf auf deiner Seite, der es öffnet:', 'Your own button on your page that opens it:', 'Seu próprio botão na página que abre isso:');
   T3('copy', 'Kopieren', 'Copy', 'Copiar'); T3('copied', 'Kopiert!', 'Copied!', 'Copiado!');
   T3('eMax', 'Maximal 10 Einträge pro Konto.', 'Maximum 10 entries per account.', 'Máximo de 10 itens por conta.');
@@ -45,6 +49,7 @@
   T3('fLayout', 'Darstellung', 'Layout', 'Exibição das perguntas'); T3('fProg', 'Fortschrittsbalken zeigen', 'Show progress bar', 'Mostrar barra de progresso'); T3('fScope', 'Antwort gilt für', 'Answer applies to', 'A resposta vale para');
   T3('qType', 'Fragetyp', 'Question type', 'Tipo de pergunta'); T3('qTitle', 'Frage', 'Question', 'Pergunta'); T3('qDesc', 'Hinweis (optional)', 'Hint (optional)', 'Dica (opcional)'); T3('qReq', 'Pflichtfrage', 'Required', 'Obrigatória');
   T3('qOpts', 'Optionen (eine pro Zeile, 2 bis 20)', 'Options (one per line, 2 to 20)', 'Opções (uma por linha, 2 a 20)'); T3('qOther', '„Andere“ mit eigener Antwort', '“Other” with own answer', '“Outra” com resposta própria'); T3('qOtherL', 'Name von „Andere“ (leer = Standard)', 'Name of “Other” (empty = default)', 'Nome de “Outra” (vazio = padrão)');
+  T3('qFiles', 'Maximale Anzahl Bilder (1–5)', 'Maximum number of images (1–5)', 'Número máximo de imagens (1–5)'); T3('rFiles', 'Bilder', 'images', 'imagens');
   T3('qMin', 'Startwert', 'Start value', 'Valor inicial'); T3('qMax', 'Endwert (2–10)', 'End value (2–10)', 'Valor final (2–10)'); T3('qMinL', 'Text links (z. B. „gar nicht“)', 'Left text (e.g. “not at all”)', 'Texto à esquerda (ex.: “nada”)'); T3('qMaxL', 'Text rechts (z. B. „sehr“)', 'Right text (e.g. “very”)', 'Texto à direita (ex.: “muito”)');
   T3('addQ', '+ Frage hinzufügen', '+ Add question', '+ Adicionar pergunta'); T3('up', '↑', '↑', '↑'); T3('down', '↓', '↓', '↓'); T3('dup', 'Duplizieren', 'Duplicate', 'Duplicar'); T3('rm', 'Entfernen', 'Remove', 'Remover');
   T3('pText', 'Text', 'Text', 'Texto'); T3('pImage', 'Bild-Adresse (https://…, optional)', 'Image address (https://…, optional)', 'Endereço da imagem (https://…, opcional)');
@@ -60,7 +65,7 @@
   T3('pvHint', 'Die Vorschau erscheint auf dieser Seite und folgt deinen Eingaben. Dort abgesendete Antworten werden nicht gespeichert.', 'The preview appears on this page and follows your input. Answers submitted there are not saved.', 'A prévia aparece nesta página e acompanha suas entradas. Respostas enviadas lá não são salvas.');
   T3('rTitle', 'Ergebnisse', 'Results', 'Resultados'); T3('rNone', 'Noch keine Antworten.', 'No answers yet.', 'Ainda sem respostas.'); T3('rTotal', 'Antworten gesamt', 'Total answers', 'Total de respostas'); T3('rOther', 'Andere (eigene Antworten)', 'Other (own answers)', 'Outra (respostas próprias)');
   T3('avg', 'Durchschnitt', 'Average', 'Média'); T3('more', 'Mehr laden', 'Load more', 'Carregar mais'); T3('rAll', 'Einzelne Antworten', 'Individual answers', 'Respostas individuais'); T3('exp', 'Export', 'Export', 'Exportar'); T3('csv', 'CSV herunterladen', 'Download CSV', 'Baixar CSV');
-  X.ty = { short: ['Kurze Antwort', 'Short answer', 'Resposta curta'], long: ['Langer Text', 'Paragraph', 'Parágrafo'], single: ['Einzelauswahl (Radio)', 'Multiple choice (one)', 'Múltipla escolha (uma)'], multi: ['Mehrfachauswahl (Haken)', 'Checkboxes (several)', 'Caixas de seleção (várias)'], dropdown: ['Dropdown', 'Dropdown', 'Lista suspensa'], scale: ['Skala (z. B. 1–5)', 'Linear scale (e.g. 1–5)', 'Escala (ex.: 1–5)'], rating: ['Sterne (1–5)', 'Stars (1–5)', 'Estrelas (1–5)'], date: ['Datum', 'Date', 'Data'], number: ['Zahl', 'Number', 'Número'], email: ['E-Mail', 'Email', 'E-mail'] };
+  X.ty = { short: ['Kurze Antwort', 'Short answer', 'Resposta curta'], long: ['Langer Text', 'Paragraph', 'Parágrafo'], single: ['Einzelauswahl (Radio)', 'Multiple choice (one)', 'Múltipla escolha (uma)'], multi: ['Mehrfachauswahl (Haken)', 'Checkboxes (several)', 'Caixas de seleção (várias)'], dropdown: ['Dropdown', 'Dropdown', 'Lista suspensa'], scale: ['Skala (z. B. 1–5)', 'Linear scale (e.g. 1–5)', 'Escala (ex.: 1–5)'], rating: ['Sterne (1–5)', 'Stars (1–5)', 'Estrelas (1–5)'], date: ['Datum', 'Date', 'Data'], number: ['Zahl', 'Number', 'Número'], email: ['E-Mail', 'Email', 'E-mail'], image: ['Bild hochladen', 'Image upload', 'Envio de imagem'] };
   X.o = {
     auto: ['Automatisch', 'Automatic', 'Automático'], light: ['Hell', 'Light', 'Claro'], dark: ['Dunkel', 'Dark', 'Escuro'], right: ['Rechts', 'Right', 'Direita'], left: ['Links', 'Left', 'Esquerda'], system: ['System', 'System', 'Sistema'], serif: ['Serif', 'Serif', 'Serifa'], mono: ['Monospace', 'Monospace', 'Monoespaçada'],
     site: ['Ganze Webseite (eine Antwort pro Gerät)', 'Whole website (one answer per device)', 'Site inteiro (uma resposta por dispositivo)'], pageScope: ['Pro Unterseite', 'Per page', 'Por página'],
@@ -133,6 +138,11 @@
         h('div', { style: 'height:8px;border-radius:4px;background:var(--border);overflow:hidden;margin-top:3px' }, [h('div', { style: 'height:100%;width:' + p + '%;background:var(--rust)' })])]);
     }));
   }
+  function thumbs(urls) {
+    return h('div', { style: 'display:flex;flex-wrap:wrap;gap:8px;margin:6px 0' }, urls.filter(function (u) { return /^https:\/\//.test(u); }).map(function (u) {
+      return h('a', { href: u, target: '_blank', rel: 'noopener noreferrer' }, [h('img', { src: u, alt: '', loading: 'lazy', referrerpolicy: 'no-referrer', style: 'width:96px;height:96px;object-fit:cover;border-radius:8px;border:1px solid var(--border)' })]);
+    }));
+  }
   function results(it) {
     leave();
     var head = h('p', { class: 'muted' }), box = h('div'), lst = h('div'), off = 0, more = h('button', { class: 'b s', type: 'button', text: t(X.more), hidden: true });
@@ -144,6 +154,7 @@
         if (r.counts) { var rows = r.counts.slice(); if (r.other) rows.push({ text: t(X.rOther), n: r.other }); box.appendChild(bars(rows, r.n)); (r.others || []).forEach(function (x) { box.appendChild(h('div', { class: 'small muted', text: '• ' + x, style: 'overflow-wrap:anywhere' })); }); }
         else if (r.dist) { box.appendChild(bars(r.dist, r.n)); if (r.avg != null) box.appendChild(h('p', { text: t(X.avg) + ': ' + r.avg })); }
         else if (r.avg != null) box.appendChild(h('p', { text: t(X.avg) + ': ' + r.avg }));
+        else if (r.imgs) { box.appendChild(h('p', { class: 'small muted', text: (r.files || 0) + ' ' + t(X.rFiles) })); box.appendChild(thumbs(r.imgs)); }
         else (r.texts || []).forEach(function (x) { box.appendChild(h('div', { class: 'card', text: x, style: 'overflow-wrap:anywhere;white-space:pre-wrap' })); });
       });
     }).catch(fail);
@@ -151,7 +162,7 @@
       call({ action: 'answers', id: it.id, offset: off }).then(function (j) {
         j.items.forEach(function (r) {
           var c = h('div', { class: 'card' }, [h('div', { class: 'small muted', text: new Date(r.created_at).toLocaleString(L) + (r.page_key ? ' · ' + r.page_key : '') })]);
-          it.pub.questions.forEach(function (q) { var v = r.answers[q.id]; if (v == null) return; c.appendChild(h('div', { style: 'overflow-wrap:anywhere' }, [h('b', { text: q.title + ': ' }), h('span', { text: Array.isArray(v) ? v.join(', ') : String(v) })])); });
+          it.pub.questions.forEach(function (q) { var v = r.answers[q.id]; if (v == null) return; if (q.type === 'image' && Array.isArray(v)) { c.appendChild(h('div', null, [h('b', { text: q.title + ':' })])); c.appendChild(thumbs(v)); return; } c.appendChild(h('div', { style: 'overflow-wrap:anywhere' }, [h('b', { text: q.title + ': ' }), h('span', { text: Array.isArray(v) ? v.join(', ') : String(v) })])); });
           if (it.my_role !== 'viewer') c.appendChild(h('div', { class: 'row' }, [h('button', { class: 'b s', type: 'button', text: t(X.del), onclick: function () { if (confirm(t(X.delR))) call({ action: 'delanswer', id: it.id, answer_id: r.id }).then(function () { c.remove(); }).catch(fail); } })]));
           lst.appendChild(c);
         });
@@ -171,7 +182,7 @@
   }
 
   /* ---------- Editor ---------- */
-  function newQ(type) { return { id: Math.random().toString(36).slice(2, 8), type: type || 'short', title: '', desc: '', required: false, options: ['', ''], other: false, other_label: '', min: 1, max: 5, min_label: '', max_label: '' }; }
+  function newQ(type) { return { id: Math.random().toString(36).slice(2, 8), type: type || 'short', title: '', desc: '', required: false, options: ['', ''], other: false, other_label: '', min: 1, max: 5, min_label: '', max_label: '', max_files: 1 }; }
   function base(kind) {
     return { title: '', emoji: kind === 'popup' ? '📣' : '📝', launcher: '', color: '#A8442E', theme: 'auto', position: 'right', font: 'system', radius: 14, lang: 'auto', mode: kind === 'popup' ? 'popup' : 'button', trigger: 'next_visit', popup_date: '', popup_delay: 0, popup_button: true };
   }
@@ -197,6 +208,39 @@
       else { el = h('input', { id: fid, type: type, min: mn, max: mx, autocomplete: 'off' }); el.value = obj[key] == null ? '' : obj[key]; el.oninput = function () { obj[key] = type === 'number' ? Number(el.value) : el.value; changed(); }; }
       return h('div', null, [h('label', { for: fid, text: t(label) }), el]);
     }
+    /* Bild vom Gerät hochladen: wird im Browser verkleinert und mit dem Formular gespeichert */
+    function imageField(obj, key, label) {
+      var box = h('div'), prev = h('img', { alt: '', style: 'display:block;max-width:100%;max-height:160px;border-radius:8px;margin:8px 0' }), fin = h('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp', hidden: true });
+      var up = h('button', { class: 'b s', type: 'button', text: t(X.imgUp), onclick: function () { fin.click(); } });
+      var rm = h('button', { class: 'b s', type: 'button', text: t(X.imgRm), onclick: function () { obj[key] = ''; draw(); changed(); } });
+      function draw() { var v = obj[key]; prev.hidden = rm.hidden = !(v && /^data:image\//.test(v)); if (!prev.hidden) prev.src = v; }
+      function shrink(file) {
+        return new Promise(function (ok, no) {
+          var u = URL.createObjectURL(file), im = new Image();
+          im.onerror = function () { URL.revokeObjectURL(u); no(); };
+          im.onload = function () {
+            URL.revokeObjectURL(u);
+            var w = im.naturalWidth, hh = im.naturalHeight, f = Math.min(1, 1400 / Math.max(w, hh)), q = 0.85, out = '';
+            for (var tries = 0; tries < 8; tries++) {
+              var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w * f)); c.height = Math.max(1, Math.round(hh * f));
+              var g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height);
+              out = c.toDataURL('image/jpeg', q);
+              if (out.length <= 380000) return ok(out);
+              q = Math.max(0.5, q - 0.1); f *= 0.8;
+            }
+            no('big');
+          };
+          im.src = u;
+        });
+      }
+      fin.onchange = function () {
+        var f = fin.files && fin.files[0]; fin.value = '';
+        if (!f || !/^image\/(jpeg|png|webp)$/.test(f.type)) return f ? msg(t(X.imgBad), true) : null;
+        shrink(f).then(function (d) { obj[key] = d; draw(); changed(); }).catch(function (e) { msg(t(e === 'big' ? X.imgBig : X.imgBad), true); });
+      };
+      box.appendChild(h('label', { text: t(label) })); box.appendChild(prev); box.appendChild(h('div', { class: 'row' }, [up, rm])); box.appendChild(fin); draw();
+      return box;
+    }
     function add(n) { nodes.push(n); }
     function vis(box, fn) { visFns.push(function () { box.hidden = !fn(); }); box.hidden = !fn(); return box; }
 
@@ -206,7 +250,7 @@
     add(F(P, 'title', X.fTitle, 'text'));
 
     if (kd === 'popup') {
-      add(F(P, 'text', X.pText, 'textarea')); add(F(P, 'image', X.pImage, 'url'));
+      add(F(P, 'text', X.pText, 'textarea')); add(F(P, 'image', X.pImage, 'url')); add(imageField(P, 'image', X.imgUp));
       add(h('h2', { text: t(X.sBtn) }));
       var bBox = h('div');
       var drawB = function () {
@@ -225,6 +269,7 @@
       X.bLabel = X.bLabel || ['Beschriftung', 'Label', 'Rótulo'];
       drawB(); add(bBox);
     } else {
+      add(imageField(P, 'image', X.fImage));
       add(F(P, 'description', X.fDesc, 'textarea'));
       add(h('h2', { text: t(X.sQ) }));
       var qBox = h('div');
@@ -240,6 +285,7 @@
             c.appendChild(h('label', { text: t(X.qOpts) })); c.appendChild(ta);
             if (q.type !== 'dropdown') { c.appendChild(F(q, 'other', X.qOther, 'checkbox')); c.appendChild(F(q, 'other_label', X.qOtherL, 'text')); }
           }
+          if (q.type === 'image') c.appendChild(F(q, 'max_files', X.qFiles, 'number', null, 1, 5));
           if (q.type === 'scale') { c.appendChild(F(q, 'min', X.qMin, 'number', null, 0, 1)); c.appendChild(F(q, 'max', X.qMax, 'number', null, 2, 10)); c.appendChild(F(q, 'min_label', X.qMinL, 'text')); c.appendChild(F(q, 'max_label', X.qMaxL, 'text')); }
           c.appendChild(h('div', { class: 'row' }, [
             h('button', { class: 'b s', type: 'button', text: t(X.up), disabled: i === 0, onclick: function () { P.questions.splice(i - 1, 0, P.questions.splice(i, 1)[0]); drawQ(); changed(); } }),
