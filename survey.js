@@ -3,6 +3,7 @@
   'use strict';
   var API = 'https://qujcvvxdvpqnsfgvleid.supabase.co/functions/v1/survey';
   var WIDGET = 'https://ajaronn.github.io/vokdev/survey-widget.js';
+  var FORMPAGE = 'https://ajaronn.github.io/vokdev/form.html';
   var view = document.getElementById('view');
   var L = (function () { var s = null; try { s = localStorage.getItem('kk_lang'); } catch (e) { } if (s === 'de' || s === 'en' || s === 'pt-BR') return s; var n = String(navigator.language || 'de').toLowerCase(); return n.indexOf('pt') === 0 ? 'pt-BR' : n.indexOf('en') === 0 ? 'en' : 'de'; })();
   var I = L === 'en' ? 1 : L === 'pt-BR' ? 2 : 0;
@@ -25,6 +26,9 @@
   T3('saved', 'Gespeichert! Unten steht dein Code.', 'Saved! Your code is below.', 'Salvo! Seu código está abaixo.');
   T3('embed', 'Dein Code für die Webseite', 'Your code for the website', 'Seu código para o site');
   T3('embedHint', 'Diese eine Zeile kurz vor </body> deiner Seite einfügen. Änderungen hier gelten sofort, der Code bleibt gleich.', 'Paste this single line just before </body> of your page. Changes here apply immediately, the code stays the same.', 'Cole esta linha logo antes de </body> da sua página. Alterações aqui valem na hora, o código continua igual.');
+  T3('linkTitle', 'Link zur eigenen Formularseite', 'Link to the standalone form page', 'Link da página própria do formulário');
+  T3('linkHint', 'Eigene Webseite nur für dieses Formular (wie bei Google Forms). Link teilen oder per QR-Code verbreiten. Der Code unten (Popup und Knopf) funktioniert weiterhin.', 'A web page of its own just for this form (like Google Forms). Share the link or spread it as a QR code. The code below (popup and button) keeps working.', 'Uma página própria só para este formulário (como no Google Forms). Compartilhe o link ou use um QR code. O código abaixo (popup e botão) continua funcionando.');
+  T3('linkOpen', 'Seite öffnen', 'Open page', 'Abrir página');
   T3('openHint', 'Eigener Knopf auf deiner Seite, der es öffnet:', 'Your own button on your page that opens it:', 'Seu próprio botão na página que abre isso:');
   T3('copy', 'Kopieren', 'Copy', 'Copiar'); T3('copied', 'Kopiert!', 'Copied!', 'Copiado!');
   T3('eMax', 'Maximal 10 Einträge pro Konto.', 'Maximum 10 entries per account.', 'Máximo de 10 itens por conta.');
@@ -303,6 +307,11 @@
     var out = h('div');
     function embed(newId) {
       out.textContent = '';
+      if (kd === 'form') {
+        var link = FORMPAGE + '?id=' + newId;
+        out.appendChild(h('h2', { text: t(X.linkTitle) })); out.appendChild(h('p', { class: 'muted', text: t(X.linkHint) })); out.appendChild(h('pre', { text: link }));
+        out.appendChild(h('div', { class: 'row' }, [copyBtn(link), h('a', { href: link, target: '_blank', rel: 'noopener', text: t(X.linkOpen), style: 'display:inline-block;padding:10px 16px;border-radius:8px;border:1px solid var(--rust);color:var(--rust);text-decoration:none;font-weight:600' })]));
+      }
       var code = '<script src="' + WIDGET + '" data-survey="' + newId + '" defer></' + 'script>';
       out.appendChild(h('h2', { text: t(X.embed) })); out.appendChild(h('p', { class: 'muted', text: t(X.embedHint) })); out.appendChild(h('pre', { text: code })); out.appendChild(copyBtn(code));
       var own = '<button onclick="KKSurvey.open()">' + (kd === 'popup' ? 'Info' : 'Feedback') + '</button>';
