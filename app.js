@@ -70,10 +70,12 @@
     var q = new URLSearchParams(location.search);
     if (!q.has('code') && !q.has('error')) return Promise.resolve();
     var saved; try { saved = JSON.parse(sessionStorage.getItem('kkdev_pkce') || 'null'); sessionStorage.removeItem('kkdev_pkce'); } catch (e) { }
+    var back = null; try { back = sessionStorage.getItem('kkdev_return'); sessionStorage.removeItem('kkdev_return'); } catch (e) { }
     history.replaceState(null, '', CONFIG.REDIRECT_URI + (saved && saved.r || '#/apps'));
     if (q.get('error')) { setTimeout(function () { toast('err', q.get('error') === 'access_denied' ? 'Anmeldung abgebrochen.' : 'Anmeldung fehlgeschlagen.'); }, 0); return Promise.resolve(); }
     if (!saved || saved.s !== q.get('state')) { setTimeout(function () { toast('err', 'Ungültiger Anmeldestatus. Bitte erneut anmelden.'); }, 0); return Promise.resolve(); }
     return tokenRequest({ grant_type: 'authorization_code', code: q.get('code'), redirect_uri: CONFIG.REDIRECT_URI, client_id: CONFIG.CLIENT_ID, code_verifier: saved.v })
+      .then(function (s) { if (back === 'host.html') { location.replace('host.html'); return new Promise(function () { }); } return s; })
       .catch(function (e) { setTimeout(function () { toast('err', kkT('Anmeldung fehlgeschlagen: {m}', { m: e.message })); }, 0); });
   }
   function accessToken() {
