@@ -9,11 +9,11 @@
   var script = document.currentScript, host = null, timer = null, cur = null;
 
   var UI = {
-    de: { open: 'Öffnen', close: 'Schließen', next: 'Weiter', back: 'Zurück', submit: 'Absenden', sending: 'Wird gesendet …', ok: 'Danke für deine Antwort!', again: 'Erneut ausfüllen', step: 'Frage {a} von {b}', req: 'Pflichtfrage', other: 'Andere', otherPh: 'Deine Antwort …', choose: 'Bitte wählen …', title: 'Formular',
+    de: { open: 'Öffnen', close: 'Schließen', next: 'Weiter', back: 'Zurück', submit: 'Absenden', sending: 'Wird gesendet …', ok: 'Danke für deine Antwort!', again: 'Erneut ausfüllen', step: 'Frage {a} von {b}', req: 'Pflichtfrage', other: 'Andere', otherPh: 'Deine Antwort …', choose: 'Bitte wählen …', title: 'Formular', img: 'Bild auswählen', imgDrop: 'Bild auswählen oder hierher ziehen', imgMax: 'Bis zu {n} Bilder', imgRm: 'Entfernen', eImg: 'Dieses Bild kann nicht verwendet werden. Nutze JPG, PNG oder WebP.', eUp: 'Bild-Upload fehlgeschlagen. Bitte versuche es erneut.',
       eReq: 'Bitte beantworte diese Frage.', eInv: 'Bitte prüfe deine Eingabe.', eSlow: 'Zu viele Anfragen. Bitte warte einen Moment.', eDom: 'Diese Funktion darf auf dieser Webseite nicht genutzt werden.', eFail: 'Senden fehlgeschlagen. Bitte versuche es später noch einmal.', eNet: 'Keine Verbindung. Prüfe dein Internet.' },
-    en: { open: 'Open', close: 'Close', next: 'Next', back: 'Back', submit: 'Submit', sending: 'Sending …', ok: 'Thanks for your answers!', again: 'Fill in again', step: 'Question {a} of {b}', req: 'Required', other: 'Other', otherPh: 'Your answer …', choose: 'Please choose …', title: 'Form',
+    en: { open: 'Open', close: 'Close', next: 'Next', back: 'Back', submit: 'Submit', sending: 'Sending …', ok: 'Thanks for your answers!', again: 'Fill in again', step: 'Question {a} of {b}', req: 'Required', other: 'Other', otherPh: 'Your answer …', choose: 'Please choose …', title: 'Form', img: 'Choose image', imgDrop: 'Choose an image or drag it here', imgMax: 'Up to {n} images', imgRm: 'Remove', eImg: 'This image cannot be used. Please use JPG, PNG or WebP.', eUp: 'Image upload failed. Please try again.',
       eReq: 'Please answer this question.', eInv: 'Please check your input.', eSlow: 'Too many requests. Please wait a moment.', eDom: 'This feature may not be used on this website.', eFail: 'Sending failed. Please try again later.', eNet: 'No connection. Check your internet.' },
-    'pt-BR': { open: 'Abrir', close: 'Fechar', next: 'Avançar', back: 'Voltar', submit: 'Enviar', sending: 'Enviando …', ok: 'Obrigado pelas suas respostas!', again: 'Preencher de novo', step: 'Pergunta {a} de {b}', req: 'Obrigatória', other: 'Outra', otherPh: 'Sua resposta …', choose: 'Escolha …', title: 'Formulário',
+    'pt-BR': { open: 'Abrir', close: 'Fechar', next: 'Avançar', back: 'Voltar', submit: 'Enviar', sending: 'Enviando …', ok: 'Obrigado pelas suas respostas!', again: 'Preencher de novo', step: 'Pergunta {a} de {b}', req: 'Obrigatória', other: 'Outra', otherPh: 'Sua resposta …', choose: 'Escolha …', title: 'Formulário', img: 'Escolher imagem', imgDrop: 'Escolha uma imagem ou arraste até aqui', imgMax: 'Até {n} imagens', imgRm: 'Remover', eImg: 'Não é possível usar esta imagem. Use JPG, PNG ou WebP.', eUp: 'Falha ao enviar a imagem. Tente novamente.',
       eReq: 'Responda a esta pergunta.', eInv: 'Verifique o que você digitou.', eSlow: 'Solicitações demais. Aguarde um momento.', eDom: 'Este recurso não pode ser usado neste site.', eFail: 'Falha ao enviar. Tente novamente mais tarde.', eNet: 'Sem conexão. Verifique sua internet.' }
   };
   var FONTS = { system: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif', serif: 'Georgia,"Times New Roman",serif', mono: 'ui-monospace,Menlo,Consolas,monospace' };
@@ -39,7 +39,27 @@
     }
     return v;
   }
-  function safeUrl(u, img) { u = String(u || ''); return (img ? /^https:\/\//i : /^(https?:\/\/|mailto:|tel:)/i).test(u) && !/[\s<>"']/.test(u); }
+  /* Bild lesen, auf max. 1600 px verkleinern und als JPEG (unter 1,4 MB) liefern; alles über data:-URLs, damit strenge CSP nichts blockiert */
+  function readURL(blob) { return new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(r.result); }; r.onerror = rej; r.readAsDataURL(blob); }); }
+  function shrink(file) {
+    return readURL(file).then(function (src) {
+      return new Promise(function (res, rej) {
+        var im = new Image();
+        im.onload = function () {
+          var w0 = im.naturalWidth, h0 = im.naturalHeight; if (!w0 || !h0) return rej();
+          var sc = Math.min(1, 1600 / Math.max(w0, h0)), tries = [[sc, .85], [sc, .7], [sc * .7, .7], [sc * .5, .6]], i = 0;
+          (function go() {
+            var f = tries[i], cv = document.createElement('canvas'); cv.width = Math.max(1, Math.round(w0 * f[0])); cv.height = Math.max(1, Math.round(h0 * f[0]));
+            var cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height); cx.drawImage(im, 0, 0, cv.width, cv.height);
+            cv.toBlob(function (b) { if (!b) return rej(); if (b.size <= 1400000) return res(b); if (++i >= tries.length) return rej(); go(); }, 'image/jpeg', f[1]);
+          })();
+        };
+        im.onerror = function () { rej(); }; im.src = src;
+      });
+    });
+  }
+  function b64(blob) { return readURL(blob).then(function (u) { return String(u).split(',')[1] || ''; }); }
+  function safeUrl(u, img) { u = String(u || ''); if (img && /^data:image\/(jpeg|png|webp);base64,[a-z0-9+\/=]+$/i.test(u)) return true; return (img ? /^https:\/\//i : /^(https?:\/\/|mailto:|tel:)/i).test(u) && !/[\s<>"']/.test(u); }
   function E(t, p, k) {
     var e = document.createElement(t);
     for (var a in p) { var v = p[a]; if (v == null || v === false) continue; if (a === 'text') e.textContent = v; else if (a === 'cls') e.className = v; else if (a.slice(0, 2) === 'on') e[a] = v; else e.setAttribute(a, v === true ? '' : v); }
@@ -72,11 +92,14 @@
     '.bts{display:flex;flex-direction:column;gap:8px;margin-top:14px}.bts:empty{display:none}.bt{display:block;text-align:center;text-decoration:none;padding:12px 16px;border-radius:calc(var(--r) * .6);border:2px solid var(--c);font:600 15px var(--f);overflow-wrap:anywhere}' +
     '.bt.f{background:var(--c);color:var(--on)}.bt.o{background:transparent;color:var(--c)}.bt.s{background:color-mix(in srgb,var(--c) 15%,transparent);color:var(--c);border-color:transparent}.bt:hover{filter:brightness(1.08)}' +
     '.ft{padding:6px 14px 10px;font-size:11px;color:var(--mut);text-align:right}.ft a{color:var(--mut)}' +
+    '.fl{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.th{position:relative;width:84px;height:84px;border-radius:calc(var(--r) * .6);overflow:hidden;border:1px solid var(--bd)}.th img{width:100%;height:100%;object-fit:cover;display:block}.th button{position:absolute;top:3px;right:3px;width:24px;height:24px;padding:0;border:0;border-radius:50%;background:rgba(0,0,0,.7);color:#fff;font-size:16px;line-height:1;cursor:pointer}' +
+    '.upl{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:18px 12px;border:2px dashed var(--bd);border-radius:calc(var(--r) * .6);background:transparent;color:var(--fg);font:600 15px var(--f);cursor:pointer;text-align:center}.upl:hover,.upl.dr{border-color:var(--c);color:var(--c)}' +
     '.w.page2{position:static;display:block;min-height:100vh;min-height:100dvh;padding:24px 12px 40px}' +
     '.page2 .p{width:min(640px,100%);margin:0 auto;max-height:none;overflow:visible;position:static;background:transparent;border:0;box-shadow:none;border-radius:0}' +
     '.page2 .h{display:block;padding:24px 24px 20px;margin:0 0 12px;background:var(--bg);color:var(--fg);border:1px solid var(--bd);border-top:10px solid var(--c);border-radius:var(--r)}' +
     '.page2 .h .he{display:block;font-size:30px;margin:0 0 6px}.page2 .h b{font-size:30px;line-height:1.2;font-weight:600;overflow-wrap:anywhere}.page2 .h .hd{margin:12px 0 0;font-size:15px;color:var(--mut);white-space:pre-line;overflow-wrap:anywhere}' +
     '.page2 .bd{overflow:visible;padding:0;background:transparent}' +
+    '.bn{display:block;width:100%;height:auto;max-height:260px;object-fit:cover;margin:0 0 12px;border-radius:var(--r)}' +
     '.page2 .qb,.page2 .ok{background:var(--bg);border:1px solid var(--bd);border-radius:var(--r);padding:20px 24px;margin:0 0 12px}.page2 .ok{padding:32px 24px}' +
     '.page2 .qt{font-size:16px;margin:0 0 6px}.page2 .qd{margin:0 0 12px}' +
     '.page2 .ot{border:0;border-bottom:1px solid var(--bd);border-radius:0;background:transparent;padding:8px 2px;margin:0 0 4px}.page2 .ot:focus{outline:0;border-bottom:2px solid var(--c);padding-bottom:7px}' +
@@ -157,6 +180,27 @@
       if (t === 'short' || t === 'email' || t === 'number' || t === 'date') {
         var inp = E('input', { cls: 'ot', type: t === 'short' ? 'text' : t, maxlength: t === 'short' ? 300 : null, 'aria-label': q.title });
         el.appendChild(inp); g = function () { return inp.value.trim(); };
+      } else if (t === 'image') {
+        var list = [], mx = q.max_files || 1, fin = E('input', { type: 'file', accept: 'image/*', multiple: mx > 1, hidden: true, tabindex: '-1' }), thumbs = E('div', { cls: 'fl' }), perr = E('div', { cls: 'er', role: 'alert', hidden: true });
+        var pick = E('button', { type: 'button', cls: 'upl', text: '📷 ' + (mx > 1 ? T.imgMax.replace('{n}', mx) : T.imgDrop) });
+        var draw = function () {
+          thumbs.textContent = ''; pick.hidden = list.length >= mx;
+          list.forEach(function (it, k) {
+            thumbs.appendChild(E('div', { cls: 'th' }, [E('img', { src: it.url, alt: '' }), E('button', { type: 'button', 'aria-label': T.imgRm, title: T.imgRm, text: '×', onclick: function () { list.splice(k, 1); draw(); } })]));
+          });
+        };
+        var take = function (fs) {
+          perr.hidden = true; var arr = Array.prototype.slice.call(fs || []).slice(0, mx - list.length);
+          arr.reduce(function (p, f) { return p.then(function () { return shrink(f).then(function (b) { return readURL(b).then(function (u) { list.push({ blob: b, url: u }); }); }); }); }, Promise.resolve())
+            .catch(function () { perr.textContent = T.eImg; perr.hidden = false; }).then(draw);
+        };
+        pick.onclick = function () { fin.click(); };
+        fin.onchange = function () { take(fin.files); fin.value = ''; };
+        pick.addEventListener('dragover', function (e) { e.preventDefault(); pick.classList.add('dr'); });
+        pick.addEventListener('dragleave', function () { pick.classList.remove('dr'); });
+        pick.addEventListener('drop', function (e) { e.preventDefault(); pick.classList.remove('dr'); take(e.dataTransfer && e.dataTransfer.files); });
+        el.appendChild(pick); el.appendChild(fin); el.appendChild(perr); el.appendChild(thumbs); draw();
+        g = function () { return list.slice(); };
       } else if (t === 'long') {
         var ta = E('textarea', { cls: 'ot', maxlength: 3000, 'aria-label': q.title });
         el.appendChild(ta); g = function () { return ta.value.trim(); };
@@ -215,6 +259,7 @@
     function buildForm() {
       bd.textContent = '';
       var qs = c.questions || [], steps = !page && c.layout !== 'page' && qs.length > 1, idx = 0, blocks = qs.map(qBlock);
+      if (c.image && !page && safeUrl(c.image, true)) bd.appendChild(E('img', { cls: 'im', src: c.image, alt: '', referrerpolicy: 'no-referrer' }));
       if (c.description && !page) bd.appendChild(E('p', { cls: 'ds', text: c.description }));
       var pb = E('b'), pm = E('span', { cls: 'm' });
       if (steps && c.show_progress !== false) bd.appendChild(E('div', { cls: 'pg' }, [E('i', null, [pb]), pm]));
@@ -241,16 +286,33 @@
         });
         if (bad >= 0) { if (steps) { idx = bad; show(); } return err(msg); }
         busy = true; nx.disabled = true; nx.textContent = T.sending;
-        send(id, { action: 'submit', lang: lang, hp: hp.value, answers: ans }).then(function (x) {
+        function uploadAll() {
+          var chain = Promise.resolve();
+          blocks.forEach(function (b) {
+            if (b.q.type !== 'image' || !ans[b.q.id]) return;
+            var fl = ans[b.q.id], paths = [];
+            chain = chain.then(function () {
+              return fl.reduce(function (p, f) {
+                return p.then(function () { return b64(f.blob); }).then(function (d) { return send(id, { action: 'upload', qid: b.q.id, data: d }); }).then(function (x) {
+                  if (!x.ok || !x.j.ok) throw (x.j && x.j.error) || 'fail';
+                  paths.push(x.j.path || 'preview');
+                });
+              }, Promise.resolve()).then(function () { ans[b.q.id] = paths; });
+            });
+          });
+          return chain;
+        }
+        uploadAll().then(function () { return send(id, { action: 'submit', lang: lang, hp: hp.value, answers: ans }); }).then(function (x) {
           if (x.ok && x.j.ok) { showDone(); return; }
           var k = x.j && x.j.error;
           err(k === 'domain' ? T.eDom : k === 'slow' ? T.eSlow : k === 'required' ? T.eReq : k === 'invalid' ? T.eInv : T.eFail);
-        }).catch(function () { err(T.eNet); }).then(function () { busy = false; nx.disabled = false; if (nx.isConnected) nx.textContent = lastStep() ? T.submit : T.next; });
+        }).catch(function (e) { err(typeof e === 'string' ? (e === 'domain' ? T.eDom : e === 'slow' ? T.eSlow : e === 'invalid' ? T.eImg : T.eUp) : T.eNet); }).then(function () { busy = false; nx.disabled = false; if (nx.isConnected) nx.textContent = lastStep() ? T.submit : T.next; });
       };
       show();
     }
 
     if (page) {
+      if (kind === 'form' && c.image && safeUrl(c.image, true)) panel.insertBefore(E('img', { cls: 'bn', src: c.image, alt: '', referrerpolicy: 'no-referrer' }), panel.firstChild);
       if (c.description && kind === 'form') panel.querySelector('.h div').appendChild(E('div', { cls: 'hd', text: c.description }));
       document.title = title || T.title;
       document.body.style.margin = '0';
