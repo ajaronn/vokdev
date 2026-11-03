@@ -68,7 +68,8 @@
     filled: ['Gefüllt', 'Filled', 'Preenchido'], outline: ['Umrandet', 'Outlined', 'Contornado'], soft: ['Sanft', 'Soft', 'Suave'], de: ['Deutsch', 'Deutsch', 'Deutsch'], en: ['English', 'English', 'English'], 'pt-BR': ['Português (BR)', 'Português (BR)', 'Português (BR)']
   };
   function OP(keys) { return keys.map(function (k) { return [k, X.o[k]]; }); }
-  var ERR = { max_forms: X.eMax, options: X.eOpts, qtitle: X.eQt, noq: X.eNoq, date: X.eDate, empty: X.eEmpty, notfound: X.eNf };
+  T3('project', 'Projekt (optional)', 'Project (optional)', 'Projeto (opcional)'); T3('noProject', '(kein Projekt)', '(no project)', '(sem projeto)'); T3('eForbid', 'Dafür fehlt dir die Berechtigung.', 'You do not have permission for that.', 'Você não tem permissão para isso.');
+  var ERR = { forbidden: X.eForbid, max_forms: X.eMax, options: X.eOpts, qtitle: X.eQt, noq: X.eNoq, date: X.eDate, empty: X.eEmpty, notfound: X.eNf };
 
   function h(tag, attrs, kids) {
     var e = document.createElement(tag);
@@ -88,7 +89,9 @@
   function loginView() { mount([h('h1', { text: t(X.title) }), h('p', { text: t(X.login) }), h('a', { href: 'index.html#/apps', text: t(X.loginBtn), style: 'display:inline-block;padding:10px 16px;border-radius:8px;background:var(--rust);color:var(--rust-contrast);text-decoration:none' })]); }
   function fail(e) { if (e && e.auth) return loginView(); msg(t(ERR[e && e.error] || X.eFail), true); }
 
-  var live = null, uidc = 0;
+  var live = null, uidc = 0, PROJ = [], preProject = '';
+  var DEEP = { project: (location.search.match(/[?&]project=([0-9a-f-]{36})/) || [])[1], edit: (location.search.match(/[?&]edit=([0-9a-z]{4,20})/) || [])[1], kind: (location.search.match(/[?&]kind=(form|popup)/) || [])[1] };
+  function projName(a) { var p = a.project_id && PROJ.filter(function (x) { return x.id === a.project_id; })[0]; return p ? ' · ' + p.team + ' / ' + p.name : ''; }
   function leave() { live = null; window.KKSurvey.destroy(); }
   function copyBtn(code) { return h('button', { class: 'b s', type: 'button', text: t(X.copy), onclick: function (e) { var b = e.target; (navigator.clipboard ? navigator.clipboard.writeText(code) : Promise.reject()).then(function () { b.textContent = t(X.copied); }).catch(function () { }); } }); }
 
@@ -96,12 +99,19 @@
   function list() {
     leave();
     call({ action: 'list' }).then(function (j) {
+      PROJ = j.projects || [];
+      if (DEEP.edit || DEEP.project) {
+        var dp = DEEP; DEEP = {}; try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) { /* egal */ }
+        var fa = dp.edit && j.items.filter(function (x) { return x.id === dp.edit; })[0];
+        if (fa && fa.my_role !== 'viewer') { edit(fa); return; }
+        if (dp.project && !dp.edit) { preProject = dp.project; edit(null, dp.kind || 'form'); return; }
+      }
       var cards = j.items.map(function (it) {
         var isF = it.kind === 'form';
-        return h('div', { class: 'card' }, [h('b', { text: it.pub.title || it.id }), h('div', { class: 'small muted', text: it.id + ' · ' + t(isF ? X.kForm : X.kPopup) + (isF ? ' · ' + it.pub.questions.length + ' ' + t(X.qsW) : '') + (it.priv.domains ? ' · ' + it.priv.domains : '') }), h('div', { class: 'row' }, [
+        return h('div', { class: 'card' }, [h('b', { text: it.pub.title || it.id }), h('div', { class: 'small muted', text: it.id + ' · ' + t(isF ? X.kForm : X.kPopup) + (isF ? ' · ' + it.pub.questions.length + ' ' + t(X.qsW) : '') + (it.priv.domains ? ' · ' + it.priv.domains : '') + projName(it) }), h('div', { class: 'row' }, [
           isF ? h('button', { class: 'b', type: 'button', text: t(X.see), onclick: function () { results(it); } }) : null,
-          h('button', { class: isF ? 'b s' : 'b', type: 'button', text: t(X.edit), onclick: function () { edit(it); } }),
-          h('button', { class: 'b s', type: 'button', text: t(X.del), onclick: function () { if (confirm(t(X.delQ))) call({ action: 'delete', id: it.id }).then(list).catch(fail); } })])]);
+          it.my_role === 'viewer' ? null : h('button', { class: isF ? 'b s' : 'b', type: 'button', text: t(X.edit), onclick: function () { edit(it); } }),
+          (!it.my_role || it.my_role === 'owner') ? h('button', { class: 'b s', type: 'button', text: t(X.del), onclick: function () { if (confirm(t(X.delQ))) call({ action: 'delete', id: it.id }).then(list).catch(fail); } }) : null])]);
       });
       mount([h('h1', { text: t(X.title) }), h('p', { class: 'muted', text: t(X.intro) }), guide(), h('h2', { text: t(X.mine) })]
         .concat(cards.length ? cards : [h('p', { class: 'muted', text: t(X.none) })])
@@ -138,7 +148,7 @@
         j.items.forEach(function (r) {
           var c = h('div', { class: 'card' }, [h('div', { class: 'small muted', text: new Date(r.created_at).toLocaleString(L) + (r.page_key ? ' · ' + r.page_key : '') })]);
           it.pub.questions.forEach(function (q) { var v = r.answers[q.id]; if (v == null) return; c.appendChild(h('div', { style: 'overflow-wrap:anywhere' }, [h('b', { text: q.title + ': ' }), h('span', { text: Array.isArray(v) ? v.join(', ') : String(v) })])); });
-          c.appendChild(h('div', { class: 'row' }, [h('button', { class: 'b s', type: 'button', text: t(X.del), onclick: function () { if (confirm(t(X.delR))) call({ action: 'delanswer', id: it.id, answer_id: r.id }).then(function () { c.remove(); }).catch(fail); } })]));
+          if (it.my_role !== 'viewer') c.appendChild(h('div', { class: 'row' }, [h('button', { class: 'b s', type: 'button', text: t(X.del), onclick: function () { if (confirm(t(X.delR))) call({ action: 'delanswer', id: it.id, answer_id: r.id }).then(function () { c.remove(); }).catch(fail); } })]));
           lst.appendChild(c);
         });
         off += j.items.length; more.hidden = !j.more;
@@ -260,6 +270,15 @@
     add(F(P, 'theme', X.fTheme, 'select', OP(['auto', 'light', 'dark']))); add(F(P, 'position', X.fPos, 'select', OP(['right', 'left']))); add(F(P, 'font', X.fFont, 'select', OP(['system', 'serif', 'mono'])));
     add(F(P, 'radius', X.fRad, 'number', null, 0, 28)); add(F(P, 'lang', X.fLang, 'select', OP(['auto', 'de', 'en', 'pt-BR'])));
     add(h('h2', { text: t(X.sSec) })); add(F(V, 'domains', X.fDom, 'text'));
+    var projSel = null, pickable = PROJ.filter(function (p) { return p.role >= 2; });
+    if (pickable.length || (it && it.project_id)) {
+      add(h('label', { text: t(X.project), for: 'f_project' }));
+      projSel = h('select', { id: 'f_project' }, [h('option', { value: '', text: t(X.noProject) })].concat(PROJ.filter(function (p) { return p.role >= 2 || (it && p.id === it.project_id); }).map(function (p) { return h('option', { value: p.id, text: p.team + ' / ' + p.name }); })));
+      projSel.value = it ? (it.project_id || '') : preProject;
+      if (it && it.my_role && it.my_role !== 'owner') projSel.disabled = true;
+      add(projSel);
+    }
+    preProject = '';
 
     /* Live-Vorschau */
     function previewCfg() {
@@ -301,7 +320,9 @@
       var bad = validate(); if (bad) return msg(t(bad), true);
       var pub = JSON.parse(JSON.stringify(P));
       if (pub.questions) pub.questions.forEach(function (q) { q.options = (q.options || []).map(function (o) { return o.trim(); }).filter(Boolean); });
-      call({ action: 'save', id: id, kind: kd, pub: pub, priv: V, bump: bump.v }).then(function (j) { it = j.item; id = it.id; msg(t(X.saved)); embed(id); }).catch(fail);
+      var body = { action: 'save', id: id, kind: kd, pub: pub, priv: V, bump: bump.v };
+      if (projSel && !projSel.disabled) body.project_id = projSel.value || null;
+      call(body).then(function (j) { it = j.item; id = it.id; msg(t(X.saved)); embed(id); }).catch(fail);
     } })]));
     add(out);
     if (it) embed(id);
