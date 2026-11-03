@@ -71,7 +71,9 @@
     '.im{display:block;width:100%;max-height:200px;object-fit:cover;border-radius:calc(var(--r) * .6);margin:0 0 12px}.tx{margin:0;white-space:pre-line;overflow-wrap:anywhere}' +
     '.bts{display:flex;flex-direction:column;gap:8px;margin-top:14px}.bts:empty{display:none}.bt{display:block;text-align:center;text-decoration:none;padding:12px 16px;border-radius:calc(var(--r) * .6);border:2px solid var(--c);font:600 15px var(--f);overflow-wrap:anywhere}' +
     '.bt.f{background:var(--c);color:var(--on)}.bt.o{background:transparent;color:var(--c)}.bt.s{background:color-mix(in srgb,var(--c) 15%,transparent);color:var(--c);border-color:transparent}.bt:hover{filter:brightness(1.08)}' +
-    '.ft{padding:6px 14px 10px;font-size:11px;color:var(--mut);text-align:right}.ft a{color:var(--mut)}';
+    '.ft{padding:6px 14px 10px;font-size:11px;color:var(--mut);text-align:right}.ft a{color:var(--mut)}' +
+    '.w.page2{position:static;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;min-height:100dvh;padding:24px 12px}' +
+    '.page2 .p{width:min(680px,100%);max-height:none;overflow:visible;position:static;box-shadow:0 2px 14px rgba(0,0,0,.12)}.page2 .bd{overflow:visible;padding:20px}.page2 .h{padding:18px 20px}.page2 .h b{font-size:20px}';
 
   function destroy() { if (timer) { clearTimeout(timer); timer = null; } if (host) { host.remove(); host = null; } cur = null; }
 
@@ -88,7 +90,7 @@
     var color = /^#[0-9a-f]{6}$/i.test(c.color) ? c.color : '#A8442E';
     var dark = c.theme === 'dark' || (c.theme === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
     var r = c.radius == null ? 14 : Math.max(0, Math.min(28, +c.radius || 0));
-    var auto = c.mode === 'popup' && (!o.preview || o.asAuto);
+    var page = !!o.page, auto = !page && c.mode === 'popup' && (!o.preview || o.asAuto);
     var place = !auto ? 'fab' : kind === 'popup' ? (c.place || 'center') : 'center';
     var openCls = { center: 'mod', br: 'cd r', bl: 'cd l', top: 'tp' }[place] || 'mod';
     var send = o.dry ? function () { return Promise.resolve({ ok: true, j: { ok: true } }); } : post;
@@ -96,7 +98,7 @@
     var emoji = c.emoji || (kind === 'popup' ? '📣' : '📝');
     var pos = c.position === 'left' ? 'l' : 'r', mk = dark ? ' dark' : '';
 
-    host = document.createElement('div'); host.id = 'kk-survey-host';
+    host = document.createElement('div'); host.id = 'kk-survey-host'; if (page) host.style.display = 'block';
     var sh = host.attachShadow({ mode: 'open' });
     sh.appendChild(E('style', { text: CSS }));
     var w = E('div');
@@ -111,6 +113,7 @@
 
     var isOpen = false;
     function setOpen(v) {
+      if (page) { isOpen = true; panel.hidden = false; w.className = 'w page2' + mk; lb.hidden = true; xb.hidden = true; return; }
       isOpen = v; panel.hidden = !v; lb.setAttribute('aria-expanded', v ? 'true' : 'false');
       if (auto && v) { w.className = 'w ' + openCls + mk; lb.hidden = true; w.hidden = false; }
       else if (auto) { w.className = 'w fab ' + pos + mk; lb.hidden = !c.popup_button; w.hidden = !c.popup_button; }
@@ -236,6 +239,11 @@
       show();
     }
 
+    if (page) {
+      document.title = title || T.title;
+      document.body.style.margin = '0';
+      document.body.style.background = dark ? '#121214' : 'color-mix(in srgb,' + color + ' 10%,#f6f6f8)';
+    }
     if (kind === 'popup') buildPopup(); else if (o.voted) showDone(); else buildForm();
     return { open: function () { setOpen(true); }, idle: function () { setOpen(false); } };
   }
@@ -260,7 +268,16 @@
     }).catch(function () { });
   }
 
+  /* Eigene Formularseite (wie Google Forms): zeigt das Formular als ganze Seite, ohne Knopf und Popup */
+  function page(id, fl, onFail) {
+    post(id, { action: 'config' }).then(function (x) {
+      if (!x.ok || !x.j.pub) { if (onFail) onFail(x.j && x.j.error); return; }
+      cur = build({ id: id, cfg: x.j.pub, kind: x.j.kind, voted: false, page: true }, fl);
+    }).catch(function () { if (onFail) onFail('net'); });
+  }
+
   window.KKSurvey = {
+    page: page,
     destroy: destroy,
     start: start,
     open: function () { if (cur) cur.open(); },
