@@ -11,7 +11,6 @@
   }
   var lang = detect(); window.kkLang = lang; document.documentElement.lang = lang;
   window.kkAdd = function (o) { Object.keys(o).forEach(function (k) { D[k.trim()] = o[k].map(function (v) { return v.trim(); }); }); };
-  kkAdd({'Web-Hosting': ['Web hosting', 'Hospedagem web']});
   window.kkT = function (s, v) {
     var r = (lang !== 'de' && D[s]) ? D[s][IDX[lang]] : s;
     if (v) r = r.replace(/\{(\w+)\}/g, function (m, k) { return v[k] != null ? v[k] : m; });
