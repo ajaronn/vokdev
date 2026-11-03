@@ -22,7 +22,7 @@
   window.kkTeams = {
     render: function (ctx) {
       var el = ctx.el, view = ctx.view, call = ctx.call, toast = ctx.toast;
-      var teams = [], apps = [], polls = [], nps = [], histData = {}, testData = {}, prefs = {}, chat = null, openSet = {};
+      var teams = [], apps = [], polls = [], nps = [], surveys = [], histData = {}, testData = {}, prefs = {}, chat = null, openSet = {};
 
       function fail(e) { toast('err', e.message); }
       function act(p, o) { return call(p, o).then(load).catch(fail); }
@@ -101,6 +101,12 @@
         extra('Feedback-Knöpfe im Projekt', p.feedback, 'feedback.html', 'Noch keine Feedback-Knöpfe in diesem Projekt.', '+ Neuer Feedback-Knopf');
         extra('Umfragen im Projekt', polls.filter(function (x) { return x.project_id === p.id; }).map(function (x) { return { id: x.id, title: (x.pub && (x.pub.title || x.pub.question)) || x.id }; }), 'poll.html', 'Noch keine Umfragen in diesem Projekt.', '+ Neue Umfrage');
         extra('NPS-Umfragen im Projekt', nps.filter(function (x) { return x.project_id === p.id; }).map(function (x) { return { id: x.id, title: (x.pub && (x.pub.title || x.pub.question)) || x.id }; }), 'nps.html', 'Noch keine NPS-Umfragen in diesem Projekt.', '+ Neue NPS-Umfrage');  
+        var sk = surveys.filter(function (x) { return x.project_id === p.id; }).map(function (x) {
+          return person(who((x.pub && x.pub.title) || x.id), canMake ? [el('a', { class: 'btn small', href: 'survey.html?edit=' + x.id, text: 'Bearbeiten' })] : []);
+        });
+        if (!sk.length) sk.push(el('p', { class: 'tm-note', text: 'Noch keine Formulare oder Popups in diesem Projekt.' }));
+        if (canMake) sk.push(row([el('a', { class: 'btn small primary', href: 'survey.html?project=' + p.id + '&kind=form', text: '+ Neues Formular' }), el('a', { class: 'btn small primary', href: 'survey.html?project=' + p.id + '&kind=popup', text: '+ Neues Popup' })]));
+        kids.push(sec('Formulare & Popups im Projekt', sk));
          extra('KI-Agenten im Projekt', p.agents, 'agents.html', 'Noch keine KI-Agenten in diesem Projekt.', '+ Neuer Agent');
         var people = team.members.map(function (mem) {
           var pm = p.members.filter(function (x) { return x.user_id === mem.user_id; })[0];
@@ -276,11 +282,18 @@
   return fetch('https://qujcvvxdvpqnsfgvleid.supabase.co/functions/v1/nps', { method: 'POST', headers: { 'content-type': 'application/json', Authorization: 'Bearer ' + s.access_token }, body: JSON.stringify({ action: 'list_forms' }) })
     .then(function (r) { return r.ok ? r.json() : { forms: [] }; }).then(function (j) { return j.forms || []; }).catch(function () { return []; });
 }
+      function loadSurveys() {
+        var s = ctx.getSession();
+        if (!s || !s.access_token) return Promise.resolve([]);
+        return fetch('https://qujcvvxdvpqnsfgvleid.supabase.co/functions/v1/survey', { method: 'POST', headers: { 'content-type': 'application/json', Authorization: 'Bearer ' + s.access_token }, body: JSON.stringify({ action: 'list' }) })
+          .then(function (r) { return r.ok ? r.json() : { items: [] }; }).then(function (j) { return j.items || []; }).catch(function () { return []; });
+      }
       function load() {
         return Promise.all([call('/teams'), call('/apps'), call('/notif-prefs')])
          .then(function (r) { teams = r[0].data; apps = r[1].data; prefs = r[2]; return loadPolls(); })
          .then(function (p) { polls = p; return loadNps(); })
-         .then(function (n) { nps = n; draw(); }).catch(fail);
+         .then(function (n) { nps = n; return loadSurveys(); })
+         .then(function (v) { surveys = v; draw(); }).catch(fail);
       }
 
       if (!ctx.getSession()) { view.textContent = ''; view.appendChild(el('p', { text: 'Bitte oben anmelden, um Teams zu nutzen.' })); kkTranslateTree(view); return; }
