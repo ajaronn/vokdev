@@ -75,7 +75,14 @@
     if (q.get('error')) { setTimeout(function () { toast('err', q.get('error') === 'access_denied' ? 'Anmeldung abgebrochen.' : 'Anmeldung fehlgeschlagen.'); }, 0); return Promise.resolve(); }
     if (!saved || saved.s !== q.get('state')) { setTimeout(function () { toast('err', 'Ungültiger Anmeldestatus. Bitte erneut anmelden.'); }, 0); return Promise.resolve(); }
     return tokenRequest({ grant_type: 'authorization_code', code: q.get('code'), redirect_uri: CONFIG.REDIRECT_URI, client_id: CONFIG.CLIENT_ID, code_verifier: saved.v })
-      .then(function (s) { if (back === 'host.html') { location.replace('host.html'); return new Promise(function () { }); } return s; })
+      .then(function (s) {
+        if (back !== 'host.html') return s;
+        /* Nur zurückleiten, wenn host.html wirklich existiert – sonst normal in der Developer-Seite bleiben */
+        return fetch('host.html', { method: 'HEAD', cache: 'no-store' }).then(function (r) {
+          if (r.ok) { location.replace('host.html'); return new Promise(function () { }); }
+          return s;
+        }, function () { return s; });
+      })
       .catch(function (e) { setTimeout(function () { toast('err', kkT('Anmeldung fehlgeschlagen: {m}', { m: e.message })); }, 0); });
   }
   function accessToken() {
