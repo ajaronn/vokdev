@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Web-Hosting</title>
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="color-scheme" content="light dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src https://qujcvvxdvpqnsfgvleid.supabase.co; base-uri 'none'; form-action 'none'">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="host.css">
+</head>
+<body>
+<main class="host">
+  <header class="host-top">
+    <h1 data-t="title"></h1>
+    <select id="lang" aria-label="Language"><option value="de">Deutsch</option><option value="en">English</option><option value="pt-BR">Português</option></select>
+  </header>
+  <p data-t="intro"></p>
+
+  <section id="auth" hidden>
+    <h2 data-t="login"></h2>
+    <label><span data-t="email"></span><input id="email" type="email" autocomplete="email"></label>
+    <label><span data-t="password"></span><input id="pw" type="password" autocomplete="current-password" minlength="8"></label>
+    <div class="row"><button id="btn-login" data-t="login"></button><button id="btn-signup" class="alt" data-t="signup"></button></div>
+  </section>
+
+  <section id="app" hidden>
+    <p class="row"><span id="who"></span><button id="btn-logout" class="alt" data-t="logout"></button></p>
+
+    <h2 data-t="new"></h2>
+    <label><span data-t="name"></span>
+      <input id="slug" maxlength="40" placeholder="meine-seite" autocapitalize="off" spellcheck="false"></label>
+    <p class="hint" id="url-preview"></p>
+    <label><span data-t="files"></span><input id="files" type="file" multiple></label>
+    <label><span data-t="folder"></span><input id="folder" type="file" webkitdirectory></label>
+    <p class="hint" data-t="rules"></p>
+    <button id="btn-pub" data-t="publish"></button>
+    <p id="msg" role="status"></p>
+
+    <h2 data-t="mine"></h2>
+    <ul id="list"></ul>
+  </section>
+</main>
+<script src="host.js"></script>
+</body>
+</html>
