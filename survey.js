@@ -31,7 +31,7 @@
   T3('linkOpen', 'Seite öffnen', 'Open page', 'Abrir página');
   T3('fImage', 'Titelbild (wird oben im Formular angezeigt)', 'Header image (shown at the top of the form)', 'Imagem de capa (exibida no topo do formulário)');
   T3('imgUp', 'Bild hochladen', 'Upload image', 'Enviar imagem'); T3('imgRm', 'Bild entfernen', 'Remove image', 'Remover imagem');
-  T3('imgBad', 'Bitte wähle eine Bilddatei (JPG, PNG oder WebP).', 'Please choose an image file (JPG, PNG or WebP).', 'Escolha um arquivo de imagem (JPG, PNG ou WebP).');
+  T3('imgBad', 'Bitte wähle eine Bilddatei (JPG, PNG, WebP …).', 'Please choose an image file (JPG, PNG or WebP).', 'Escolha um arquivo de imagem (JPG, PNG ou WebP).');
   T3('imgBig', 'Das Bild konnte nicht klein genug gemacht werden. Nimm ein anderes.', 'The image could not be made small enough. Choose another one.', 'Não foi possível reduzir a imagem o bastante. Escolha outra.');
   T3('openHint', 'Eigener Knopf auf deiner Seite, der es öffnet:', 'Your own button on your page that opens it:', 'Seu próprio botão na página que abre isso:');
   T3('copy', 'Kopieren', 'Copy', 'Copiar'); T3('copied', 'Kopiert!', 'Copied!', 'Copiado!');
@@ -210,17 +210,18 @@
     }
     /* Bild vom Gerät hochladen: wird im Browser verkleinert und mit dem Formular gespeichert */
     function imageField(obj, key, label) {
-      var box = h('div'), prev = h('img', { alt: '', style: 'display:block;max-width:100%;max-height:160px;border-radius:8px;margin:8px 0' }), fin = h('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp', hidden: true });
+      var box = h('div'), prev = h('img', { alt: '', style: 'display:block;max-width:100%;max-height:160px;border-radius:8px;margin:8px 0' }), fin = h('input', { type: 'file', accept: 'image/*', hidden: true });
       var up = h('button', { class: 'b s', type: 'button', text: t(X.imgUp), onclick: function () { fin.click(); } });
       var rm = h('button', { class: 'b s', type: 'button', text: t(X.imgRm), onclick: function () { obj[key] = ''; draw(); changed(); } });
       function draw() { var v = obj[key]; prev.hidden = rm.hidden = !(v && /^data:image\//.test(v)); if (!prev.hidden) prev.src = v; }
       function shrink(file) {
         return new Promise(function (ok, no) {
-          var u = URL.createObjectURL(file), im = new Image();
-          im.onerror = function () { URL.revokeObjectURL(u); no(); };
+          var fr = new FileReader(), im = new Image();
+          fr.onerror = function () { no(); };
+          im.onerror = function () { no(); };
           im.onload = function () {
-            URL.revokeObjectURL(u);
             var w = im.naturalWidth, hh = im.naturalHeight, f = Math.min(1, 1400 / Math.max(w, hh)), q = 0.85, out = '';
+            if (!w || !hh) return no();
             for (var tries = 0; tries < 8; tries++) {
               var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w * f)); c.height = Math.max(1, Math.round(hh * f));
               var g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height);
@@ -230,12 +231,13 @@
             }
             no('big');
           };
-          im.src = u;
+          fr.onload = function () { im.src = String(fr.result); }; /* data: statt blob:, weil die Seiten-Policy blob: blockiert */
+          fr.readAsDataURL(file);
         });
       }
       fin.onchange = function () {
         var f = fin.files && fin.files[0]; fin.value = '';
-        if (!f || !/^image\/(jpeg|png|webp)$/.test(f.type)) return f ? msg(t(X.imgBad), true) : null;
+        if (!f) return; if (f.type && !/^image\//.test(f.type)) return msg(t(X.imgBad), true);
         shrink(f).then(function (d) { obj[key] = d; draw(); changed(); }).catch(function (e) { msg(t(e === 'big' ? X.imgBig : X.imgBad), true); });
       };
       box.appendChild(h('label', { text: t(label) })); box.appendChild(prev); box.appendChild(h('div', { class: 'row' }, [up, rm])); box.appendChild(fin); draw();
